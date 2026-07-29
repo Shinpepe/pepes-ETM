@@ -4,6 +4,16 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>모두의 여행 공유 — 우리가 다녀온 세계</title>
+<meta name="description" content="우리가 다녀온 세계 각국의 도시에 불을 켜보세요. 방문 기록과 한 줄 후기, 월별 여행 시기까지." />
+<!-- 링크 공유 미리보기 (⚠️ og:image와 og:url은 배포 주소로 교체하세요) -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="모두의 여행 공유" />
+<meta property="og:description" content="우리가 다녀온 세계, 지도 위에 불을 켜다 ✈ 방문 기록·후기·여행 시기 공유 지도" />
+<meta property="og:image" content="https://YOUR_ID.github.io/YOUR_REPO/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://YOUR_ID.github.io/YOUR_REPO/" />
+<meta name="twitter:card" content="summary_large_image" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet" />
@@ -204,8 +214,50 @@
   .reviews .txt{font-size:13.5px;line-height:1.6;}
   .emptynote{font-size:13px;color:var(--muted);padding:8px 0;line-height:1.6;}
   .panel-actions{padding:14px 20px 20px;flex-shrink:0;border-top:1px solid var(--line);}
-  .panel-actions .btn{width:100%;padding:13px;font-size:15px;}
+  .panel-actions .action-row{display:flex;gap:8px;}
+  .panel-actions .btn{padding:13px;font-size:15px;}
+  .panel-actions #visitBtn{flex:1;}
+  .panel-actions #shareBtn{flex-shrink:0;width:52px;font-size:17px;}
   .wikinote{font-size:11px;color:var(--muted);margin-top:8px;text-align:center;}
+
+  /* ── 여행 진행도 ─────────────────────── */
+  .modal.wide{width:min(440px,100%);}
+  .progress{margin:6px 0 14px;}
+  .progress .bignums{display:flex;gap:8px;margin-bottom:14px;}
+  .progress .bignum{
+    flex:1;background:var(--ink);border:1px solid var(--line);border-radius:14px;
+    padding:12px 8px;text-align:center;
+  }
+  .progress .bignum b{
+    display:block;font-family:var(--display);font-size:24px;color:var(--teal);
+    font-variant-numeric:tabular-nums;line-height:1.2;
+  }
+  .progress .bignum span{font-size:11.5px;color:var(--muted);}
+  .progress .world{margin-bottom:12px;}
+  .progress .world .wlabel{
+    display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px;
+  }
+  .progress .world .wlabel b{color:var(--amber);}
+  .gauge{height:10px;border-radius:999px;background:rgba(242,236,223,.08);overflow:hidden;}
+  .gauge i{
+    display:block;height:100%;border-radius:999px;
+    background:linear-gradient(90deg,var(--teal),var(--amber));
+    transition:width .6s cubic-bezier(.2,.8,.2,1);
+  }
+  .conts{display:flex;flex-direction:column;gap:6px;}
+  .cont{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);}
+  .cont .cname{width:82px;flex-shrink:0;}
+  .cont .cbar{flex:1;height:6px;border-radius:999px;background:rgba(242,236,223,.08);overflow:hidden;}
+  .cont .cbar i{display:block;height:100%;background:var(--amber);border-radius:999px;}
+  .cont.done .cbar i{background:var(--teal);}
+  .cont .cnum{width:44px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums;}
+  .cont.done .cnum{color:var(--teal);}
+  .journal-scroll{
+    max-height:min(320px,36vh);overflow-y:auto;
+    background:var(--ink);border:1px solid var(--line);border-radius:14px;
+    padding:2px 12px;
+  }
+  .journal-scroll:empty{display:none;}
 
   /* ── 모달 공통 ───────────────────────── */
   .overlay{
@@ -300,6 +352,7 @@
     background:rgba(11,18,32,.75)!important;color:var(--muted)!important;
     font-family:var(--body)!important;font-size:10.5px!important;
     padding:3px 8px!important;border-radius:8px 0 0 0!important;
+    text-align:right!important;line-height:1.5!important;
   }
   .leaflet-control-attribution a{color:var(--muted)!important;}
 
@@ -308,6 +361,8 @@
     .brand span{display:none}
     .searchwrap{order:3;min-width:100%;max-width:none;}
     .btn.who{max-width:90px;}
+    .btn-label{display:none}
+    .topbar .btn{padding:10px 12px;}
     .months{bottom:10px;max-width:calc(100vw - 20px);}
     .stats{left:12px;bottom:66px;padding:12px 14px;min-width:0;}
     .stats .row{font-size:12px}
@@ -338,8 +393,8 @@
     <div class="suggest" id="suggest" role="listbox"></div>
   </div>
   <div class="spacer"></div>
-  <button class="btn mode" id="myModeBtn" aria-pressed="false">🧭 내 여행</button>
-  <button class="btn" id="rankBtn">🏆 랭킹</button>
+  <button class="btn mode" id="myModeBtn" aria-pressed="false" title="내 여행">🧭<span class="btn-label"> 내 여행</span></button>
+  <button class="btn" id="rankBtn" title="랭킹">🏆<span class="btn-label"> 랭킹</span></button>
   <div class="userbox" id="userbox">
     <button class="btn primary" id="loginBtn">로그인</button>
   </div>
@@ -353,7 +408,7 @@
   <div class="row"><span id="statL1">기록된 여행</span><b id="statVisits">…</b></div>
   <div class="row"><span id="statL2">불이 켜진 도시</span><b id="statCities">…</b></div>
   <div class="row"><span id="statL3">나의 여행</span><b id="statMine">–</b></div>
-  <button class="btn journal-btn" id="journalBtn">📖 여행 일지 보기</button>
+  <button class="btn journal-btn" id="journalBtn">📖 여행 기록 보기</button>
   <div class="legend">
     <span><i class="dot amber"></i>모두의 도시</span>
     <span><i class="dot teal"></i>나의 도시</span>
@@ -389,7 +444,10 @@
     <div class="wikinote" id="wikiNote"></div>
   </div>
   <div class="panel-actions">
-    <button class="btn primary" id="visitBtn">🧳 나도 다녀왔어요</button>
+    <div class="action-row">
+      <button class="btn primary" id="visitBtn">🧳 나도 다녀왔어요</button>
+      <button class="btn" id="shareBtn" title="이 도시 링크 공유" aria-label="이 도시 링크 공유">🔗</button>
+    </div>
   </div>
 </section>
 
@@ -453,12 +511,14 @@
   </div>
 </div>
 
-<!-- 여행 일지 모달 -->
+<!-- 여행 기록 모달 -->
 <div class="overlay" id="journalOverlay">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="journalTitle">
-    <h2 id="journalTitle">📖 나의 여행 일지</h2>
-    <p class="sub" id="journalSub"></p>
-    <ul class="journal" id="journalList"></ul>
+  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="journalTitle">
+    <h2 id="journalTitle">📖 나의 여행 기록</h2>
+    <div class="progress" id="progressBox"></div>
+    <div class="journal-scroll">
+      <ul class="journal" id="journalList"></ul>
+    </div>
     <button class="btn alt" id="journalClose">닫기</button>
   </div>
 </div>
@@ -481,7 +541,7 @@ const firebaseConfig = {
 const DEMO = firebaseConfig.apiKey === "YOUR_API_KEY";
 
 /* ══════════════════════════════════════════════════════════════
-   2) 도시 데이터 (큐레이션 · 113곳 / e: 영문 검색어)
+   2) 도시 데이터 (큐레이션 · 159곳 / e: 영문 검색어)
 ══════════════════════════════════════════════════════════════ */
 const CITIES = [
  // ── 대한민국·일본 ──
@@ -496,6 +556,11 @@ const CITIES = [
  {id:"sapporo",e:"Sapporo",n:"삿포로",c:"일본",lat:43.0618,lng:141.3545,w:"삿포로시",d:"눈축제와 맥주의 홋카이도 중심 도시.",s:["오도리 공원","삿포로 맥주 박물관","모이와야마 전망대"]},
  {id:"nagoya",e:"Nagoya",n:"나고야",c:"일본",lat:35.1815,lng:136.9066,w:"나고야시",d:"성과 미소카츠, 주부 지방의 중심.",s:["나고야성","오스 상점가","아츠타 신궁"]},
  {id:"okinawa",e:"Okinawa Naha",n:"오키나와(나하)",c:"일본",lat:26.2124,lng:127.6809,w:"나하시",d:"에메랄드빛 바다의 일본 남쪽 휴양지.",s:["슈리성","츄라우미 수족관","고쿠사이도리"]},
+ {id:"kanazawa",e:"Kanazawa",n:"가나자와",c:"일본",lat:36.5613,lng:136.6562,w:"가나자와시",d:"작은 교토라 불리는 정원과 금박의 도시.",s:["겐로쿠엔","히가시차야 거리","오미초 시장"]},
+ {id:"takamatsu",e:"Takamatsu",n:"다카마쓰",c:"일본",lat:34.3428,lng:134.0466,w:"다카마쓰시",d:"우동과 예술 섬 여행의 거점, 시코쿠의 관문.",s:["리쓰린 공원","나오시마(근교)","고토히라궁(근교)"]},
+ {id:"matsuyama",e:"Matsuyama",n:"마쓰야마",c:"일본",lat:33.8392,lng:132.7657,w:"마쓰야마시",d:"일본에서 가장 오래된 도고 온천의 도시.",s:["도고 온천","마쓰야마성","보짱 열차"]},
+ {id:"asahikawa",e:"Asahikawa",n:"아사히카와",c:"일본",lat:43.7706,lng:142.365,w:"아사히카와시",d:"다이세쓰산과 비에이로 가는 홋카이도 제2의 도시.",s:["아사히야마 동물원","비에이·후라노(근교)","다이세쓰산 국립공원(근교)"]},
+ {id:"miyakojima",e:"Miyakojima",n:"미야코지마",c:"일본",lat:24.8055,lng:125.2811,w:"미야코지마시",d:"'일본의 몰디브'라 불리는 에메랄드빛 산호섬.",s:["요나하 마에하마 비치","이라부 대교","스나야마 비치"]},
  // ── 아시아 ──
  {id:"taipei",e:"Taipei",n:"타이베이",c:"대만",lat:25.033,lng:121.5654,w:"타이베이시",d:"야시장과 온천, 정 많은 대만의 수도.",s:["타이베이 101","스린 야시장","지우펀(근교)"]},
  {id:"hongkong",e:"Hong Kong",n:"홍콩",c:"홍콩",lat:22.3193,lng:114.1694,w:"홍콩",d:"백만 불짜리 야경의 동서양 교차점.",s:["빅토리아 피크","침사추이 해변산책로","란콰이퐁"]},
@@ -504,31 +569,56 @@ const CITIES = [
  {id:"shanghai",e:"Shanghai",n:"상하이",c:"중국",lat:31.2304,lng:121.4737,w:"상하이시",d:"와이탄 야경이 빛나는 국제 도시.",s:["와이탄","위위안(예원)","동방명주 타워"]},
  {id:"xian",e:"Xian",n:"시안",c:"중국",lat:34.3416,lng:108.9398,w:"시안시",d:"병마용과 실크로드의 출발점, 고도 장안.",s:["진시황 병마용","시안 성벽","대안탑"]},
  {id:"chengdu",e:"Chengdu",n:"청두",c:"중국",lat:30.5728,lng:104.0668,w:"청두시",d:"판다와 마라의 고향, 쓰촨의 중심.",s:["판다 기지","콴자이샹쯔","러산 대불(근교)"]},
+ {id:"zhangjiajie",e:"Zhangjiajie",n:"장자제(장가계)",c:"중국",lat:29.117,lng:110.479,w:"장자제시",d:"아바타의 풍경이 실재하는 기암 봉우리의 도시.",s:["톈먼산","무릉원(원가계)","유리다리"]},
+ {id:"guilin",e:"Guilin",n:"구이린(계림)",c:"중국",lat:25.2736,lng:110.2907,w:"구이린시",d:"산수화가 현실이 되는 카르스트 강의 도시.",s:["리강 유람선","양숴","상비산(코끼리산)"]},
  {id:"bangkok",e:"Bangkok",n:"방콕",c:"태국",lat:13.7563,lng:100.5018,w:"방콕",d:"사원과 수상시장, 열기의 도시.",s:["왓 아룬","카오산 로드","짜뚜짝 시장"]},
  {id:"chiangmai",e:"Chiang Mai",n:"치앙마이",c:"태국",lat:18.7883,lng:98.9853,w:"치앙마이",d:"한 달 살기 성지, 태국 북부의 고도.",s:["도이수텝 사원","님만해민 거리","선데이 마켓"]},
  {id:"phuket",e:"Phuket",n:"푸켓",c:"태국",lat:7.8804,lng:98.3923,w:"푸껫섬",d:"안다만해의 진주, 태국 최대 휴양 섬.",s:["빠통 비치","피피섬 투어","빅 붓다"]},
+ {id:"pattaya",e:"Pattaya",n:"파타야",c:"태국",lat:12.9366,lng:100.8892,w:"파타야",d:"방콕에서 가까운 세계적 해변 휴양 도시.",s:["산호섬(꼬란)","워킹 스트리트","농눅 빌리지"]},
+ {id:"krabi",e:"Krabi",n:"끄라비",c:"태국",lat:8.0863,lng:98.9063,w:"끄라비",d:"석회암 절벽과 에메랄드 바다의 안다만 보석.",s:["라일레이 비치","4섬 투어","에메랄드 풀"]},
  {id:"singapore",e:"Singapore",n:"싱가포르",c:"싱가포르",lat:1.3521,lng:103.8198,w:"싱가포르",d:"정원 속 미래 도시 국가.",s:["가든스 바이 더 베이","마리나 베이 샌즈","센토사 섬"]},
  {id:"kualalumpur",e:"Kuala Lumpur",n:"쿠알라룸푸르",c:"말레이시아",lat:3.139,lng:101.6869,w:"쿠알라룸푸르",d:"쌍둥이 빌딩이 솟은 다문화 수도.",s:["페트로나스 트윈 타워","바투 동굴","부킷 빈탕"]},
- {id:"kotakinabalu",e:"Kota Kinabalu",n:"코타키나발루",c:"말레이시아",lat:5.9804,lng:116.0735,w:"코타키나발루",d:"석양이 아름다운 보르네오의 휴양지.",s:["탄중아루 해변 석양","사피섬 호핑","키나발루산(근교)"]},
+ {id:"kotakinabalu",e:"Kota Kinabalu",we:"Kota Kinabalu",n:"코타키나발루",c:"말레이시아",lat:5.9804,lng:116.0735,w:"코타키나발루",d:"석양이 아름다운 보르네오의 휴양지.",s:["탄중아루 해변 석양","사피섬 호핑","키나발루산(근교)"]},
  {id:"bali",e:"Bali",n:"발리",c:"인도네시아",lat:-8.6705,lng:115.2126,w:"발리섬",d:"신들의 섬, 서퍼와 요가인의 낙원.",s:["우붓 몽키 포레스트","따나롯 사원","꾸따 비치"]},
  {id:"hanoi",e:"Hanoi",n:"하노이",c:"베트남",lat:21.0278,lng:105.8342,w:"하노이",d:"쌀국수 향 가득한 베트남의 수도.",s:["호안끼엠 호수","하노이 구시가지","하롱베이(근교)"]},
  {id:"danang",e:"Da Nang",n:"다낭",c:"베트남",lat:16.0544,lng:108.2022,w:"다낭",d:"미케 비치와 바나힐의 휴양 도시.",s:["미케 비치","바나힐 골든브릿지","호이안(근교)"]},
  {id:"hochiminh",e:"Ho Chi Minh",n:"호치민",c:"베트남",lat:10.8231,lng:106.6297,w:"호찌민시",d:"오토바이 물결이 흐르는 남부 경제 수도.",s:["벤탄 시장","노트르담 대성당","사이공 중앙우체국"]},
  {id:"nhatrang",e:"Nha Trang",n:"나트랑",c:"베트남",lat:12.2388,lng:109.1967,w:"냐짱",d:"긴 백사장과 머드 온천의 해변 도시.",s:["빈원더스 나트랑","포나가르 탑","혼문섬 호핑"]},
+ {id:"dalat",e:"Da Lat Dalat",n:"달랏",c:"베트남",lat:11.9404,lng:108.4583,w:"달랏",d:"베트남의 고원 휴양지, 꽃과 커피의 도시.",s:["쑤언흐엉 호수","다탄라 폭포","크레이지 하우스"]},
  {id:"phuquoc",e:"Phu Quoc",n:"푸꾸옥",c:"베트남",lat:10.2899,lng:103.984,w:"푸꾸옥섬",d:"베트남의 보석 같은 남쪽 섬.",s:["사오 비치","혼똔 케이블카","야시장"]},
  {id:"cebu",e:"Cebu",n:"세부",c:"필리핀",lat:10.3157,lng:123.8854,w:"세부",d:"에메랄드빛 바다의 다이빙 성지.",s:["카와산 폭포","오슬롭 고래상어 투어","막탄 아일랜드 호핑"]},
  {id:"boracay",e:"Boracay",n:"보라카이",c:"필리핀",lat:11.9674,lng:121.9248,w:"보라카이섬",d:"세계적으로 손꼽히는 화이트 비치의 섬.",s:["화이트 비치","디몰","선셋 세일링"]},
  {id:"manila",e:"Manila",n:"마닐라",c:"필리핀",lat:14.5995,lng:120.9842,w:"마닐라",d:"스페인 유산이 남은 필리핀의 수도.",s:["인트라무로스","리잘 공원","산 아구스틴 성당"]},
+ {id:"siemreap",e:"Siem Reap Angkor",n:"씨엠립",c:"캄보디아",lat:13.3671,lng:103.8448,w:"시엠레아프",d:"앙코르 유적으로 가는 크메르 제국의 관문.",s:["앙코르 와트","앙코르 톰(바욘 사원)","톤레삽 호수"]},
+ {id:"luangprabang",e:"Luang Prabang",n:"루앙프라방",c:"라오스",lat:19.8834,lng:102.1347,w:"루앙프라방",d:"메콩강변의 느린 시간, 사원의 고도.",s:["꽝시 폭포","왓 시엥통","탁발 행렬과 야시장"]},
  {id:"male",e:"Maldives Male",n:"몰디브(말레)",c:"몰디브",lat:4.1755,lng:73.5093,w:"말레",d:"산호초 위 수상 방갈로의 허니문 성지.",s:["리조트 스노클링","수상 방갈로","돌고래 크루즈"]},
  {id:"kathmandu",e:"Kathmandu",n:"카트만두",c:"네팔",lat:27.7172,lng:85.324,w:"카트만두",d:"히말라야 트레킹의 관문 도시.",s:["스와얌부나트(몽키 템플)","더르바르 광장","타멜 거리"]},
+ {id:"colombo",e:"Colombo Sri Lanka",n:"콜롬보",c:"스리랑카",lat:6.9271,lng:79.8612,w:"콜롬보",we:"Colombo",d:"실론티의 나라로 들어가는 인도양의 관문.",s:["갈레 페이스 그린","강가라마야 사원","시기리야(근교)"]},
+ {id:"pokhara",e:"Pokhara",n:"포카라",c:"네팔",lat:28.2096,lng:83.9856,w:"포카라",d:"안나푸르나가 호수에 비치는 트레킹의 성지.",s:["페와 호수","사랑콧 일출","안나푸르나 트레킹"]},
  {id:"delhi",e:"Delhi",n:"델리",c:"인도",lat:28.6139,lng:77.209,w:"델리",d:"혼돈과 매혹이 공존하는 인도의 관문.",s:["레드 포트","인디아 게이트","타지마할(근교 아그라)"]},
  {id:"jaipur",e:"Jaipur",n:"자이푸르",c:"인도",lat:26.9124,lng:75.7873,w:"자이푸르",d:"핑크 시티, 라자스탄의 보석.",s:["암베르 요새","하와 마할","시티 팰리스"]},
+ {id:"agra",e:"Agra Taj Mahal",n:"아그라",c:"인도",lat:27.1767,lng:78.0081,w:"아그라",d:"타지마할이 있는 무굴 제국의 옛 수도.",s:["타지마할","아그라 요새","파테푸르 시크리(근교)"]},
+ {id:"varanasi",e:"Varanasi",n:"바라나시",c:"인도",lat:25.3176,lng:82.9739,w:"바라나시",d:"갠지스강의 새벽, 배낭여행자들의 성지.",s:["갠지스강 가트","아르티 의식","사르나트(근교)"]},
  // ── 중동 ──
  {id:"dubai",e:"Dubai",n:"두바이",c:"아랍에미리트",lat:25.2048,lng:55.2708,w:"두바이",d:"사막 위에 세운 초현실 도시.",s:["부르즈 할리파","두바이 몰","사막 사파리"]},
  {id:"abudhabi",e:"Abu Dhabi",n:"아부다비",c:"아랍에미리트",lat:24.4539,lng:54.3773,w:"아부다비",d:"그랜드 모스크가 빛나는 UAE의 수도.",s:["셰이크 자이드 그랜드 모스크","루브르 아부다비","페라리 월드"]},
  {id:"doha",e:"Doha",n:"도하",c:"카타르",lat:25.2854,lng:51.531,w:"도하",d:"전통 시장과 미래 스카이라인의 공존.",s:["수크 와키프","이슬람 예술 박물관","코르니쉬 해안"]},
+ {id:"petra",e:"Petra Wadi Musa",n:"페트라(와디무사)",c:"요르단",lat:30.3285,lng:35.4444,w:"페트라",d:"바위를 깎아 만든 사막의 고대 도시.",s:["알카즈네(보물창고)","앗데이르(수도원)","와디럼 사막(근교)"]},
  {id:"istanbul",e:"Istanbul",n:"이스탄불",c:"튀르키예",lat:41.0082,lng:28.9784,w:"이스탄불",d:"두 대륙에 걸친 제국의 수도.",s:["아야소피아","블루 모스크","그랜드 바자르"]},
+ {id:"antalya",e:"Antalya",n:"안탈리아",c:"튀르키예",lat:36.8969,lng:30.7133,w:"안탈리아",d:"세계 방문객 수 최상위권, 지중해의 터키 휴양 수도.",s:["칼레이치(구시가)","뒤덴 폭포","콘얄트 해변"]},
  {id:"cappadocia",e:"Cappadocia Goreme",n:"카파도키아(괴레메)",c:"튀르키예",lat:38.6431,lng:34.8289,w:"괴레메",d:"열기구가 떠오르는 기암괴석의 땅.",s:["열기구 투어","괴레메 야외 박물관","데린쿠유 지하도시"]},
+ // ── 몽골·러시아·중앙아시아·코카서스 ──
+ {id:"ulaanbaatar",e:"Ulaanbaatar Mongolia",n:"울란바토르",c:"몽골",lat:47.8864,lng:106.9057,w:"울란바토르",d:"초원과 별빛 여행이 시작되는 몽골의 수도.",s:["간단 사원","수흐바타르 광장","테렐지 국립공원(근교)"]},
+ {id:"moscow",e:"Moscow",n:"모스크바",c:"러시아",lat:55.7558,lng:37.6173,w:"모스크바",d:"붉은 광장과 양파 지붕의 러시아 수도.",s:["붉은 광장","성 바실리 대성당","크렘린"]},
+ {id:"saintpetersburg",e:"Saint Petersburg",n:"상트페테르부르크",c:"러시아",lat:59.9311,lng:30.3609,w:"상트페테르부르크",d:"백야와 예술, 러시아의 문화 수도.",s:["에르미타주 미술관","피의 사원","페테르고프(여름궁전)"]},
+ {id:"vladivostok",e:"Vladivostok",n:"블라디보스토크",c:"러시아",lat:43.1155,lng:131.8855,w:"블라디보스토크",d:"한국에서 가장 가까운 유럽 감성의 항구 도시.",s:["금각교","독수리 전망대","아르바트 거리"]},
+ {id:"irkutsk",e:"Irkutsk Baikal",n:"이르쿠츠크",c:"러시아",lat:52.287,lng:104.305,w:"이르쿠츠크",d:"바이칼 호수로 가는 시베리아의 관문.",s:["바이칼 호수(리스트비앙카)","130 지구","카잔 성당"]},
+ {id:"tashkent",e:"Tashkent",n:"타슈켄트",c:"우즈베키스탄",lat:41.2995,lng:69.2401,w:"타슈켄트",d:"실크로드의 현대적 관문, 우즈베키스탄의 수도.",s:["초르수 바자르","하즈라티 이맘 광장","아미르 티무르 광장"]},
+ {id:"samarkand",e:"Samarkand",n:"사마르칸트",c:"우즈베키스탄",lat:39.627,lng:66.975,w:"사마르칸트",d:"푸른 돔이 빛나는 실크로드의 심장.",s:["레기스탄 광장","구르 아미르","비비하눔 모스크"]},
+ {id:"almaty",e:"Almaty",n:"알마티",c:"카자흐스탄",lat:43.222,lng:76.8512,w:"알마티",d:"톈산산맥 아래 사과의 도시.",s:["침불락 & 메데우","젠코프 대성당","콕토베 언덕"]},
+ {id:"tbilisi",e:"Tbilisi Georgia",n:"트빌리시",c:"조지아",lat:41.7151,lng:44.8271,w:"트빌리시",d:"와인과 온천, 코카서스의 보석.",s:["나리칼라 요새","올드타운 유황온천","므츠헤타(근교)"]},
+ {id:"baku",e:"Baku",we:"Baku",n:"바쿠",c:"아제르바이잔",lat:40.4093,lng:49.8671,w:"바쿠",d:"카스피해의 바람, 불의 나라 수도.",s:["이체리셰헤르(올드시티)","헤이다르 알리예프 센터","플레임 타워"]},
+ {id:"yerevan",e:"Yerevan",n:"예레반",c:"아르메니아",lat:40.1792,lng:44.4991,w:"예레반",d:"아라라트산이 보이는 세계에서 가장 오래된 도시 중 하나.",s:["캐스케이드","공화국 광장","게하르트 수도원(근교)"]},
  // ── 유럽 ──
  {id:"london",e:"London",n:"런던",c:"영국",lat:51.5074,lng:-0.1278,w:"런던",d:"박물관과 펍, 안개의 도시.",s:["빅 벤 & 국회의사당","대영박물관","타워 브리지"]},
  {id:"edinburgh",e:"Edinburgh",n:"에든버러",c:"영국",lat:55.9533,lng:-3.1883,w:"에든버러",d:"고성과 축제의 스코틀랜드 수도.",s:["에든버러성","로열 마일","아서스 시트"]},
@@ -544,6 +634,8 @@ const CITIES = [
  {id:"madrid",e:"Madrid",n:"마드리드",c:"스페인",lat:40.4168,lng:-3.7038,w:"마드리드",d:"태양과 하몽, 스페인의 심장.",s:["프라도 미술관","레티로 공원","마요르 광장"]},
  {id:"seville",e:"Seville",n:"세비야",c:"스페인",lat:37.3891,lng:-5.9845,w:"세비야",d:"플라멩코와 오렌지 향의 안달루시아 수도.",s:["세비야 대성당","스페인 광장","알카사르"]},
  {id:"granada",e:"Granada",n:"그라나다",c:"스페인",lat:37.1773,lng:-3.5986,w:"그라나다",d:"알람브라의 추억이 흐르는 도시.",s:["알람브라 궁전","알바이신 지구","타파스 골목"]},
+ {id:"palma",e:"Palma Mallorca",n:"마요르카(팔마)",c:"스페인",lat:39.5696,lng:2.6502,w:"팔마데마요르카",we:"Palma de Mallorca",d:"지중해 휴양의 정석, 마요르카섬의 중심.",s:["팔마 대성당","소예르 트램","드라크 동굴"]},
+ {id:"bilbao",e:"Bilbao",n:"빌바오",c:"스페인",lat:43.263,lng:-2.935,w:"빌바오",d:"구겐하임이 바꾼 바스크의 예술·미식 도시.",s:["구겐하임 미술관","카스코 비에호(구시가)","산 후안 데 가스텔루가체(근교)"]},
  {id:"lisbon",e:"Lisbon",n:"리스본",c:"포르투갈",lat:38.7223,lng:-9.1393,w:"리스본",d:"노란 트램이 언덕을 오르는 대서양의 도시.",s:["벨렝 탑","알파마 지구","제로니무스 수도원"]},
  {id:"porto",e:"Porto",n:"포르투",c:"포르투갈",lat:41.1579,lng:-8.6291,w:"포르투",d:"포트와인과 아줄레주의 강변 도시.",s:["동 루이스 1세 다리","렐루 서점","히베이라 지구"]},
  {id:"amsterdam",e:"Amsterdam",n:"암스테르담",c:"네덜란드",lat:52.3676,lng:4.9041,w:"암스테르담",d:"운하와 자전거, 자유로운 공기.",s:["반 고흐 미술관","안네 프랑크의 집","운하 크루즈"]},
@@ -557,6 +649,7 @@ const CITIES = [
  {id:"salzburg",e:"Salzburg",n:"잘츠부르크",c:"오스트리아",lat:47.8095,lng:13.055,w:"잘츠부르크",d:"모차르트와 사운드 오브 뮤직의 도시.",s:["호엔잘츠부르크 요새","미라벨 정원","게트라이데 거리"]},
  {id:"budapest",e:"Budapest",n:"부다페스트",c:"헝가리",lat:47.4979,lng:19.0402,w:"부다페스트",d:"다뉴브강 야경이 아름다운 온천 도시.",s:["국회의사당","세체니 온천","어부의 요새"]},
  {id:"krakow",e:"Krakow",n:"크라쿠프",c:"폴란드",lat:50.0647,lng:19.945,w:"크라쿠프",d:"폴란드의 옛 수도, 중세 광장의 도시.",s:["중앙 광장(리네크)","바벨성","비엘리치카 소금광산(근교)"]},
+ {id:"warsaw",e:"Warsaw",n:"바르샤바",c:"폴란드",lat:52.2297,lng:21.0122,w:"바르샤바",d:"잿더미에서 복원된 불사조의 수도, 쇼팽의 도시.",s:["구시가 광장","와지엔키 공원","바르샤바 봉기 박물관"]},
  {id:"zagreb",e:"Zagreb",n:"자그레브",c:"크로아티아",lat:45.815,lng:15.9819,w:"자그레브",d:"플리트비체로 가는 크로아티아의 수도.",s:["반 옐라치치 광장","성 마르코 성당","플리트비체 호수(근교)"]},
  {id:"dubrovnik",e:"Dubrovnik",n:"두브로브니크",c:"크로아티아",lat:42.6507,lng:18.0944,w:"두브로브니크",d:"아드리아해의 진주, 성벽의 도시.",s:["구시가 성벽 걷기","스르지산 케이블카","반예 비치"]},
  {id:"zurich",e:"Zurich",n:"취리히",c:"스위스",lat:47.3769,lng:8.5417,w:"취리히",d:"호수와 알프스로 가는 스위스의 관문.",s:["취리히 호수","반호프 거리","루체른(근교)"]},
@@ -568,6 +661,7 @@ const CITIES = [
  {id:"stockholm",e:"Stockholm",n:"스톡홀름",c:"스웨덴",lat:59.3293,lng:18.0686,w:"스톡홀름",d:"14개의 섬으로 이루어진 북유럽의 베네치아.",s:["감라스탄 구시가","바사 박물관","시청사"]},
  {id:"copenhagen",e:"Copenhagen",n:"코펜하겐",c:"덴마크",lat:55.6761,lng:12.5683,w:"코펜하겐",d:"휘게의 본고장, 자전거의 도시.",s:["뉘하운","인어공주 동상","티볼리 공원"]},
  {id:"oslo",e:"Oslo",n:"오슬로",c:"노르웨이",lat:59.9139,lng:10.7522,w:"오슬로",d:"피오르로 가는 노르웨이의 수도.",s:["오페라 하우스","비겔란 조각공원","뭉크 미술관"]},
+ {id:"tromso",e:"Tromso",n:"트롬쇠",c:"노르웨이",lat:69.6492,lng:18.9553,w:"트롬쇠",d:"북극권의 오로라 수도.",s:["오로라 투어","북극 성당","피엘헤이센 케이블카"]},
  {id:"reykjavik",e:"Reykjavik",n:"레이캬비크",c:"아이슬란드",lat:64.1466,lng:-21.9426,w:"레이캬비크",d:"오로라와 온천, 불과 얼음의 나라.",s:["할그림스키르캬 교회","블루 라군","골든 서클 투어"]},
  {id:"tallinn",e:"Tallinn",n:"탈린",c:"에스토니아",lat:59.437,lng:24.7536,w:"탈린",d:"중세 성벽이 완벽히 남은 발트해의 보석.",s:["구시가(올드타운)","알렉산더 네프스키 대성당","톰페아 전망대"]},
  // ── 북미 ──
@@ -585,25 +679,38 @@ const CITIES = [
  {id:"vancouver",e:"Vancouver",n:"밴쿠버",c:"캐나다",lat:49.2827,lng:-123.1207,w:"밴쿠버",d:"바다와 숲이 도시를 감싸는 곳.",s:["스탠리 파크","그랜빌 아일랜드","캐필라노 서스펜션 브리지"]},
  {id:"toronto",e:"Toronto",n:"토론토",c:"캐나다",lat:43.6532,lng:-79.3832,w:"토론토",d:"다양성의 도시, 캐나다 최대 도시.",s:["CN 타워","나이아가라 폭포(근교)","디스틸러리 디스트릭트"]},
  {id:"montreal",e:"Montreal",n:"몬트리올",c:"캐나다",lat:45.5019,lng:-73.5674,w:"몬트리올",d:"북미 속의 프랑스, 축제의 도시.",s:["노트르담 대성당","올드 몬트리올","몽로얄 전망대"]},
+ {id:"banff",e:"Banff",n:"밴프",c:"캐나다",lat:51.1784,lng:-115.5708,w:"밴프",d:"캐나다 로키의 심장, 호수와 설산의 마을.",s:["레이크 루이스","모레인 호수","설퍼산 곤돌라"]},
+ {id:"yellowknife",e:"Yellowknife",n:"옐로나이프",c:"캐나다",lat:62.454,lng:-114.3718,w:"옐로나이프",d:"세계에서 오로라를 볼 확률이 가장 높은 도시.",s:["오로라 빌리지","그레이트슬레이브 호수","올드타운"]},
  // ── 중남미 ──
  {id:"cancun",e:"Cancun",n:"칸쿤",c:"멕시코",lat:21.1619,lng:-86.8515,w:"칸쿤",d:"카리브해의 올인클루시브 휴양지.",s:["치첸이트사(근교)","세노테 다이빙","이슬라 무헤레스"]},
  {id:"mexicocity",e:"Mexico City",n:"멕시코시티",c:"멕시코",lat:19.4326,lng:-99.1332,w:"멕시코시티",d:"아즈텍 위에 세워진 거대 수도.",s:["소칼로 광장","테오티우아칸(근교)","프리다 칼로 박물관"]},
  {id:"havana",e:"Havana",n:"아바나",c:"쿠바",lat:23.1136,lng:-82.3666,w:"아바나",d:"올드카와 살사가 흐르는 시간이 멈춘 도시.",s:["올드 아바나","말레콘 해안도로","클래식카 투어"]},
+ {id:"cartagena",e:"Cartagena Colombia",n:"카르타헤나",c:"콜롬비아",lat:10.391,lng:-75.4794,w:"카르타헤나 (콜롬비아)",d:"카리브해의 색채가 넘치는 성벽 도시.",s:["구시가 성벽","게세마니 지구","로사리오 제도"]},
+ {id:"puntacana",e:"Punta Cana",n:"푼타카나",c:"도미니카공화국",lat:18.5601,lng:-68.3725,w:"푼타카나",d:"카리브해 최대의 올인클루시브 휴양지.",s:["바바로 비치","사오나섬 투어","호요 아술 세노테"]},
  {id:"lima",e:"Lima",n:"리마",c:"페루",lat:-12.0464,lng:-77.0428,w:"리마",d:"미식의 수도, 페루 여행의 시작점.",s:["미라플로레스","아르마스 광장","라르코 박물관"]},
  {id:"cusco",e:"Cusco",n:"쿠스코",c:"페루",lat:-13.5319,lng:-71.9675,w:"쿠스코",d:"마추픽추로 가는 잉카 제국의 수도.",s:["마추픽추","아르마스 광장","무지개산"]},
+ {id:"uyuni",e:"Uyuni",n:"우유니",c:"볼리비아",lat:-20.4597,lng:-66.825,w:"우유니",d:"하늘을 비추는 세계 최대의 소금사막.",s:["우유니 소금사막","기차 무덤","콜차니 마을"]},
  {id:"rio",e:"Rio de Janeiro",n:"리우데자네이루",c:"브라질",lat:-22.9068,lng:-43.1729,w:"리우데자네이루",d:"삼바와 해변, 경이로운 도시.",s:["예수상(코르코바두)","코파카바나 해변","슈가로프 산"]},
+ {id:"iguazu",e:"Iguazu Foz do Iguacu",n:"포스두이과수",c:"브라질",lat:-25.5478,lng:-54.5882,w:"포스두이구아수",d:"세계 3대 폭포 이과수의 관문 도시.",s:["이과수 폭포","이타이푸 댐","새 공원(파르케 다스 아베스)"]},
  {id:"buenosaires",e:"Buenos Aires",n:"부에노스아이레스",c:"아르헨티나",lat:-34.6037,lng:-58.3816,w:"부에노스아이레스",d:"탱고가 흐르는 남미의 파리.",s:["라 보카 카미니토","레콜레타 묘지","오벨리스크"]},
+ {id:"santiago",e:"Santiago Chile",n:"산티아고",c:"칠레",lat:-33.4489,lng:-70.6693,w:"산티아고",d:"안데스가 병풍처럼 둘러싼 칠레의 수도.",s:["아르마스 광장","산크리스토발 언덕","발파라이소(근교)"]},
+ {id:"elcalafate",e:"El Calafate Patagonia",n:"엘칼라파테",c:"아르헨티나",lat:-50.3379,lng:-72.2648,w:"엘칼라파테",d:"파타고니아 빙하 여행의 베이스캠프.",s:["페리토 모레노 빙하","로스 글라시아레스 국립공원","엘찰텐(근교)"]},
  // ── 오세아니아 ──
  {id:"sydney",e:"Sydney",n:"시드니",c:"호주",lat:-33.8688,lng:151.2093,w:"시드니",d:"오페라하우스와 항구의 도시.",s:["시드니 오페라하우스","하버 브리지","본다이 비치"]},
  {id:"melbourne",e:"Melbourne",n:"멜버른",c:"호주",lat:-37.8136,lng:144.9631,w:"멜버른",d:"커피와 골목 예술의 문화 수도.",s:["그레이트 오션 로드(근교)","호시어 레인","퀸 빅토리아 마켓"]},
  {id:"brisbane",e:"Brisbane",n:"브리즈번",c:"호주",lat:-27.4698,lng:153.0251,w:"브리즈번",d:"골드코스트로 가는 강변의 도시.",s:["사우스 뱅크","론파인 코알라 보호구역","골드코스트(근교)"]},
+ {id:"cairns",e:"Cairns",n:"케언즈",c:"호주",lat:-16.9186,lng:145.7781,w:"케언스",d:"그레이트 배리어 리프로 가는 열대 관문.",s:["그레이트 배리어 리프","쿠란다 관광열차","그린 아일랜드"]},
  {id:"auckland",e:"Auckland",n:"오클랜드",c:"뉴질랜드",lat:-36.8509,lng:174.7645,w:"오클랜드 (뉴질랜드)",d:"돛의 도시, 뉴질랜드 여행의 시작점.",s:["스카이 타워","와이헤케 섬","호비튼(근교)"]},
  {id:"queenstown",e:"Queenstown",n:"퀸스타운",c:"뉴질랜드",lat:-45.0312,lng:168.6626,w:"퀸스타운 (뉴질랜드)",d:"번지점프가 태어난 모험의 수도.",s:["밀포드 사운드(근교)","번지점프","스카이라인 곤돌라"]},
  {id:"guam",e:"Guam",n:"괌",c:"미국령 괌",lat:13.4443,lng:144.7937,w:"괌",d:"가까운 남태평양, 가족 여행의 정석.",s:["투몬 비치","사랑의 절벽","차모로 야시장"]},
  {id:"saipan",e:"Saipan",n:"사이판",c:"북마리아나 제도",lat:15.1894,lng:145.7275,w:"사이판",d:"마나가하섬이 빛나는 휴양 섬.",s:["마나가하섬","만세절벽","마이크로 비치"]},
  // ── 아프리카 ──
  {id:"cairo",e:"Cairo",n:"카이로",c:"이집트",lat:30.0444,lng:31.2357,w:"카이로",d:"피라미드를 품은 나일강의 대도시.",s:["기자 피라미드","이집트 박물관","칸 엘 칼릴리 시장"]},
+ {id:"luxor",e:"Luxor",n:"룩소르",c:"이집트",lat:25.6872,lng:32.6396,w:"룩소르",d:"세계 최대의 야외 박물관, 고대 테베.",s:["카르나크 신전","왕가의 계곡","나일강 열기구 투어"]},
  {id:"capetown",e:"Cape Town",n:"케이프타운",c:"남아프리카공화국",lat:-33.9249,lng:18.4241,w:"케이프타운",d:"테이블마운틴 아래 두 대양이 만나는 곳.",s:["테이블 마운틴","희망봉","보캅 마을"]},
+ {id:"zanzibar",e:"Zanzibar Stone Town",n:"잔지바르(스톤타운)",c:"탄자니아",lat:-6.1659,lng:39.2026,w:"스톤타운",d:"인도양의 향신료 섬, 스와힐리 문화의 심장.",s:["스톤타운 골목","능귀 비치","프리즌 아일랜드"]},
+ {id:"nairobi",e:"Nairobi",n:"나이로비",c:"케냐",lat:-1.2921,lng:36.8219,w:"나이로비",d:"도심 옆에 사파리가 있는 아프리카의 관문.",s:["나이로비 국립공원","기린 센터","마사이마라(근교)"]},
+ {id:"victoriafalls",e:"Victoria Falls",n:"빅토리아폴스",c:"짐바브웨",lat:-17.9243,lng:25.8572,w:"빅토리아 폭포",d:"'천둥 치는 연기', 세계 3대 폭포의 마을.",s:["빅토리아 폭포","잠베지강 선셋 크루즈","데블스 풀"]},
  {id:"marrakech",e:"Marrakech",n:"마라케시",c:"모로코",lat:31.6295,lng:-7.9811,w:"마라케시",d:"붉은 도시, 사하라로 가는 관문.",s:["제마 엘프나 광장","마조렐 정원","메디나 수크"]},
 ];
 const CITY_MAP = Object.fromEntries(CITIES.map(c=>[c.id,c]));
@@ -708,8 +815,8 @@ async function initFirebase(){
 }
 function myNickname(){
   if(!currentUser) return "여행자";
-  return usersMap[currentUser.uid] ||
-    (currentUser.email ? currentUser.email.split("@")[0] : "여행자");
+  return (usersMap[currentUser.uid] ||
+    (currentUser.email ? currentUser.email.split("@")[0] : "여행자")).slice(0,40);
 }
 function maybePromptNickname(){
   if(DEMO || nickPrompted || !currentUser || !usersLoaded) return;
@@ -787,10 +894,12 @@ const map = L.map("map",{
   maxBounds:[[-85,-3600],[85,3600]],   // 상하로 지도를 벗어나지 않도록 고정 (좌우는 사실상 무제한)
   maxBoundsViscosity:1.0
 }).setView([25,40],2.4);
-map.attributionControl.addAttribution("Copyright © 2026 Shinhyunsu. All Rights Reserved.");
+map.attributionControl.setPrefix(false);
+map.attributionControl.addAttribution(
+  '&copy; OpenStreetMap &copy; CARTO<br>Copyright © 2026 Shinhyunsu. All Rights Reserved.');
 L.control.zoom({position:"bottomright"}).addTo(map);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",{
-  attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:"abcd", maxZoom:19
+  subdomains:"abcd", maxZoom:19
 }).addTo(map);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png",{
   subdomains:"abcd", maxZoom:19, pane:"shadowPane"
@@ -864,9 +973,65 @@ myModeBtn.onclick = ()=>{
 };
 
 /* ══════════════════════════════════════════════════════════════
-   8) 여행 일지
+   8) 여행 기록 (진행도 + 타임라인)
 ══════════════════════════════════════════════════════════════ */
+// 국가 → 대륙 매핑 (진행도 계산용)
+const CONTINENT = {
+  "대한민국":"아시아","일본":"아시아","대만":"아시아","홍콩":"아시아","마카오":"아시아","중국":"아시아",
+  "태국":"아시아","싱가포르":"아시아","말레이시아":"아시아","인도네시아":"아시아","베트남":"아시아",
+  "필리핀":"아시아","캄보디아":"아시아","라오스":"아시아","몰디브":"아시아","네팔":"아시아",
+  "인도":"아시아","스리랑카":"아시아","몽골":"아시아","우즈베키스탄":"아시아","카자흐스탄":"아시아",
+  "아랍에미리트":"중동","카타르":"중동","튀르키예":"중동","요르단":"중동",
+  "조지아":"중동","아제르바이잔":"중동","아르메니아":"중동",
+  "영국":"유럽","아일랜드":"유럽","프랑스":"유럽","이탈리아":"유럽","스페인":"유럽","포르투갈":"유럽",
+  "네덜란드":"유럽","벨기에":"유럽","독일":"유럽","체코":"유럽","오스트리아":"유럽","헝가리":"유럽",
+  "폴란드":"유럽","크로아티아":"유럽","스위스":"유럽","그리스":"유럽","몰타":"유럽","핀란드":"유럽",
+  "스웨덴":"유럽","덴마크":"유럽","노르웨이":"유럽","아이슬란드":"유럽","에스토니아":"유럽","러시아":"유럽",
+  "미국":"북미","캐나다":"북미",
+  "멕시코":"중남미","쿠바":"중남미","페루":"중남미","브라질":"중남미","아르헨티나":"중남미",
+  "볼리비아":"중남미","칠레":"중남미","콜롬비아":"중남미","도미니카공화국":"중남미",
+  "호주":"오세아니아","뉴질랜드":"오세아니아","미국령 괌":"오세아니아","북마리아나 제도":"오세아니아",
+  "이집트":"아프리카","남아프리카공화국":"아프리카","모로코":"아프리카","탄자니아":"아프리카",
+  "케냐":"아프리카","짐바브웨":"아프리카",
+};
+const CONT_ORDER = ["아시아","중동","유럽","북미","중남미","오세아니아","아프리카"];
+const normCountry = c => c.replace("(하와이)","");
+const contOf = c => CONTINENT[normCountry(c)] || "기타";
+// 전체 국가/대륙별 국가 수 (도시 데이터 기준)
+const ALL_COUNTRIES = new Set(CITIES.map(c=>normCountry(c.c)));
+const CONT_TOTALS = {};
+ALL_COUNTRIES.forEach(c=>{
+  const k = CONTINENT[c] || "기타";
+  CONT_TOTALS[k] = (CONT_TOTALS[k]||0)+1;
+});
+
 const journalOverlay = document.getElementById("journalOverlay");
+function renderProgress(mine){
+  const myCountries = new Set(mine.map(v=>normCountry(CITY_MAP[v.cityId].c)));
+  const myCities = new Set(mine.map(v=>v.cityId));
+  const totalC = ALL_COUNTRIES.size;
+  const pct = totalC ? Math.round(myCountries.size/totalC*1000)/10 : 0;
+  const contHtml = CONT_ORDER.filter(k=>CONT_TOTALS[k]).map(k=>{
+    const got = [...myCountries].filter(c=>CONTINENT[c]===k).length;
+    const tot = CONT_TOTALS[k];
+    const w = tot ? Math.round(got/tot*100) : 0;
+    return `<div class="cont${got===tot&&tot>0?" done":""}">
+      <span class="cname">${k}</span>
+      <span class="cbar"><i style="width:${w}%"></i></span>
+      <span class="cnum">${got}/${tot}</span></div>`;
+  }).join("");
+  document.getElementById("progressBox").innerHTML = `
+    <div class="bignums">
+      <div class="bignum"><b>${mine.length}</b><span>번의 여행</span></div>
+      <div class="bignum"><b>${myCities.size}</b><span>개 도시</span></div>
+      <div class="bignum"><b>${myCountries.size}</b><span>개 국가</span></div>
+    </div>
+    <div class="world">
+      <div class="wlabel"><span>세계 여행 진행도 (${totalC}개국 기준)</span><b>${pct}%</b></div>
+      <div class="gauge"><i style="width:${Math.min(100,pct)}%"></i></div>
+    </div>
+    <div class="conts">${contHtml}</div>`;
+}
 function openJournal(){
   if(!currentUser){ openAuth(); return; }
   const mine = allVisits.filter(v=>v.uid===currentUser.uid)
@@ -875,10 +1040,7 @@ function openJournal(){
       if(a.date) return -1; if(b.date) return 1;
       return b.ts-a.ts;
     });
-  const countries = new Set(mine.map(v=>CITY_MAP[v.cityId].c));
-  document.getElementById("journalSub").textContent = mine.length
-    ? `${mine.length}번의 여행 · ${new Set(mine.map(v=>v.cityId)).size}개 도시 · ${countries.size}개 국가`
-    : "";
+  renderProgress(mine);
   const list = document.getElementById("journalList");
   if(!mine.length){
     list.innerHTML = `<li class="emptynote">아직 기록이 없어요. 지도의 도시를 눌러 첫 발자국을 남겨보세요!</li>`;
@@ -917,6 +1079,7 @@ const fmtDate = d=> d ? `${+d.slice(0,4)}.${+d.slice(5,7)}.${+d.slice(8,10)}` : 
 async function openCity(id){
   const city = CITY_MAP[id]; if(!city) return;
   openedCity = id;
+  history.replaceState(null, "", "#city="+id);
   document.getElementById("panelCity").textContent = city.n;
   document.getElementById("panelCountry").textContent = city.c;
   document.getElementById("panelDesc").textContent = city.d;
@@ -935,14 +1098,26 @@ async function openCity(id){
     }
     const w = wikiCache[id];
     if(openedCity!==id) return;
-    if(w.thumbnail?.source){
+    let thumb = w.thumbnail?.source;
+    let source = "한국어 위키백과";
+    // 한국어 문서에 사진이 없으면 영어 위키백과에서 사진만 가져오기
+    if(!thumb && city.we){
+      if(!wikiCache["en:"+id]){
+        const res2 = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city.we)}`);
+        wikiCache["en:"+id] = res2.ok ? await res2.json() : {};
+      }
+      if(openedCity!==id) return;
+      thumb = wikiCache["en:"+id].thumbnail?.source;
+      if(thumb) source = "위키백과(영문)";
+    }
+    if(thumb){
       const img = document.createElement("img");
       // 원본(수 MB일 수 있음) 대신 800px 썸네일로 로딩 속도 개선
-      img.src = w.thumbnail.source.replace(/\/\d+px-/, "/800px-");
-      img.onerror = ()=>{ img.onerror=null; img.src = w.thumbnail.source; };
+      img.src = thumb.replace(/\/\d+px-/, "/800px-");
+      img.onerror = ()=>{ img.onerror=null; img.src = thumb; };
       img.alt = `${city.n} 대표 사진`;
       photoBox.prepend(img); noimg.style.display="none";
-      note.textContent = "사진·설명 출처: 한국어 위키백과";
+      note.textContent = `사진·설명 출처: ${source}`;
     }
     if(w.extract) document.getElementById("panelDesc").textContent = w.extract;
   }catch(e){ /* 사진 없이 진행 */ }
@@ -1029,7 +1204,58 @@ document.getElementById("myTrips").addEventListener("click",e=>{
     if(v) openVisitModal(v);
   }
 });
-document.getElementById("panelClose").onclick = ()=>panel.classList.remove("open");
+function closePanel(){
+  panel.classList.remove("open");
+  if(location.hash.startsWith("#city="))
+    history.replaceState(null, "", location.pathname + location.search);
+}
+document.getElementById("panelClose").onclick = closePanel;
+
+/* ── 도시 링크 공유 ──
+   실패 대비 4단계 폴백:
+   1) Web Share API (모바일) → 2) Clipboard API (HTTPS/localhost 전용)
+   3) execCommand('copy') (file:// 등 구형 환경) → 4) 수동 복사 프롬프트 */
+function cityShareUrl(id){
+  return location.href.split("#")[0] + "#city=" + id;
+}
+function legacyCopy(text){
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.cssText = "position:fixed;opacity:0";
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  let ok = false;
+  try{ ok = document.execCommand("copy"); }catch(e){}
+  ta.remove(); return ok;
+}
+async function shareCity(){
+  if(!openedCity) return;
+  const city = CITY_MAP[openedCity];
+  const url = cityShareUrl(openedCity);
+  const text = `모두의 여행 공유 — ${city.n}(${city.c})의 발자국과 후기를 구경해 보세요!`;
+  // 1) Web Share (사용자가 취소한 경우는 조용히 종료)
+  if(navigator.share){
+    try{ await navigator.share({title:"모두의 여행 공유", text, url}); return; }
+    catch(e){ if(e.name==="AbortError") return; /* 미지원·실패 → 복사로 진행 */ }
+  }
+  // 2) Clipboard API
+  if(navigator.clipboard && window.isSecureContext){
+    try{
+      await navigator.clipboard.writeText(url);
+      toast("링크를 복사했어요. 붙여넣기로 공유해 보세요 🔗"); return;
+    }catch(e){ /* 권한 거부 등 → 다음 단계 */ }
+  }
+  // 3) 구형 복사
+  if(legacyCopy(url)){ toast("링크를 복사했어요. 붙여넣기로 공유해 보세요 🔗"); return; }
+  // 4) 수동 복사
+  window.prompt("복사가 지원되지 않는 환경이에요. 아래 링크를 직접 복사해 주세요.", url);
+}
+document.getElementById("shareBtn").onclick = shareCity;
+
+// 딥링크: 첫 진입 및 해시 변경 시 도시 열기
+function openCityFromHash(){
+  const m = location.hash.match(/^#city=([a-z]+)$/);
+  if(m && CITY_MAP[m[1]]) openCity(m[1]);
+}
+window.addEventListener("hashchange", openCityFromHash);
 
 /* ══════════════════════════════════════════════════════════════
    10) 모달 공통 (드래그로 닫히는 문제 방지)
@@ -1065,6 +1291,7 @@ function openVisitModal(editVisit){
   document.getElementById("visitSave").textContent = editingVisit ? "수정하기" : "기록하기";
   visitDate.value = editingVisit?.date || today;
   visitDate.max = today;
+  visitDate.min = "1950-01-01";
   visitReview.value = editingVisit?.review || "";
   document.getElementById("reviewLen").textContent = visitReview.value.length;
   document.getElementById("visitErr").textContent = "";
@@ -1082,6 +1309,7 @@ document.getElementById("visitSave").onclick = async ()=>{
   const err = document.getElementById("visitErr");
   const date = visitDate.value;
   if(!date){ err.textContent = "방문 날짜를 선택해 주세요."; return; }
+  if(date < "1950-01-01"){ err.textContent = "1950년 이후 날짜만 기록할 수 있어요."; return; }
   if(date > new Date().toISOString().slice(0,10)){ err.textContent = "미래 날짜는 기록할 수 없어요."; return; }
   const btn = document.getElementById("visitSave");
   const isEdit = !!editingVisit;
@@ -1333,7 +1561,7 @@ document.addEventListener("keydown",e=>{
   else if(rankOverlay.classList.contains("open")) closeRank();
   else if(journalOverlay.classList.contains("open")) closeJournal();
   else if(authOverlay.classList.contains("open")) closeAuth();
-  else if(panel.classList.contains("open")) panel.classList.remove("open");
+  else if(panel.classList.contains("open")) closePanel();
 });
 let toastTimer;
 function toast(msg){
@@ -1354,6 +1582,7 @@ if(DEMO){
     toast("Firebase 초기화에 실패했어요. 설정값을 확인해 주세요.");
   });
 }
+openCityFromHash(); // 공유 링크(#city=...)로 들어온 경우 해당 도시 열기
 </script>
 </body>
 </html>
