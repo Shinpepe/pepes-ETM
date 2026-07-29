@@ -97,7 +97,7 @@
 
   /* ── 월별 필터 칩 ─────────────────────── */
   .months{
-    position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:900;
+    position:fixed;left:50%;bottom:30px;transform:translateX(-50%);z-index:900;
     display:flex;gap:6px;padding:7px;max-width:min(92vw,760px);overflow-x:auto;
     background:rgba(17,27,44,.88);backdrop-filter:blur(8px);
     border:1px solid var(--line);border-radius:999px;box-shadow:var(--shadow);
@@ -114,7 +114,7 @@
 
   /* ── 좌하단 통계 ─────────────────────── */
   .stats{
-    position:fixed;left:20px;bottom:20px;z-index:901;
+    position:fixed;left:20px;bottom:86px;z-index:901;
     background:rgba(17,27,44,.88);backdrop-filter:blur(8px);
     border:1px solid var(--line);border-radius:var(--radius);
     padding:16px 18px;min-width:224px;box-shadow:var(--shadow);
@@ -344,7 +344,7 @@
 
   /* 토스트 */
   .toast{
-    position:fixed;left:50%;bottom:76px;transform:translate(-50%,20px);
+    position:fixed;left:50%;bottom:96px;transform:translate(-50%,20px);
     background:var(--paper);color:#1b1408;padding:11px 20px;border-radius:999px;
     font-size:14px;font-weight:600;z-index:3000;opacity:0;pointer-events:none;
     transition:opacity .2s, transform .2s;box-shadow:var(--shadow);
@@ -360,16 +360,15 @@
     box-shadow:var(--shadow)!important;padding:5px 10px!important;
   }
   .leaflet-tooltip-top.city-tip::before{border-top-color:var(--panel)!important;}
-  .leaflet-bottom.leaflet-right{margin-bottom:56px;}
-  .leaflet-control-attribution{
-    background:rgba(11,18,32,.75)!important;color:var(--muted)!important;
-    font-family:var(--body)!important;font-size:10.5px!important;
-    padding:3px 8px!important;border-radius:8px 0 0 0!important;
-    text-align:right!important;line-height:1.5!important;
-  }
-  .leaflet-control-attribution a{color:var(--muted)!important;}
+  /* 줌 버튼: 통계 카드 아래선과 정렬 */
+  .leaflet-bottom.leaflet-right{margin-bottom:76px;}
 
-  .credit{display:none;}
+  .credit{
+    position:fixed;left:0;right:0;bottom:0;z-index:902;
+    background:rgba(9,15,27,.94);color:rgba(242,236,223,.45);
+    font-size:10px;text-align:center;padding:4px 10px;line-height:1.4;
+    border-top:1px solid var(--line);
+  }
 
   @media (max-width:720px){
     .topbar{flex-wrap:wrap;padding:10px 12px;gap:8px;}
@@ -378,24 +377,15 @@
     .btn.who{max-width:90px;}
     .btn-label{display:none}
     .topbar .btn{padding:10px 12px;}
-    /* 출처·저작권을 최하단 한 줄 푸터로 이동 (지도 위 2줄 상자는 숨김) */
-    .credit{
-      display:block;position:fixed;left:0;right:0;bottom:0;z-index:902;
-      background:rgba(9,15,27,.94);color:rgba(242,236,223,.45);
-      font-size:9.5px;text-align:center;padding:4px 8px;line-height:1.4;
-      border-top:1px solid var(--line);
-    }
-    .leaflet-control-attribution{display:none!important;}
-    .months{bottom:32px;max-width:calc(100vw - 20px);}
-    .stats{left:12px;bottom:88px;padding:12px 14px;min-width:0;}
+    .credit{font-size:9.5px;}
+    .months{max-width:calc(100vw - 20px);}
+    .stats{left:12px;padding:12px 14px;min-width:0;}
     .stats .row{font-size:12px}
     .legend{display:none}
-    .toast{bottom:96px;}
     .panel{top:auto;height:80%;width:100%;border-left:none;border-top:1px solid var(--line);
       border-radius:20px 20px 0 0;transform:translateY(105%);}
     .panel.open{transform:translateY(0)}
     .panel-photo{height:145px;border-radius:20px 20px 0 0;overflow:hidden;}
-    .leaflet-bottom.leaflet-right{margin-bottom:134px;}
   }
   @media (prefers-reduced-motion: reduce){
     *{transition:none!important;animation:none!important}
@@ -554,7 +544,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- 모바일 전용: 지도 위 출처 상자 대신 최하단 한 줄 크레딧 -->
-<footer class="credit">© OpenStreetMap · © CARTO · Copyright © 2026 Shinhyunsu. All Rights Reserved.</footer>
+<footer class="credit">© OpenStreetMap / © CARTO / Copyright © 2026 Shinhyunsu. All Rights Reserved.</footer>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script type="module">
@@ -969,13 +959,11 @@ async function removeVisit(visitId){
    5) 지도
 ══════════════════════════════════════════════════════════════ */
 const map = L.map("map",{
-  zoomControl:false, worldCopyJump:true, minZoom:2,
+  zoomControl:false, attributionControl:false, worldCopyJump:true, minZoom:2,
   maxBounds:[[-85,-3600],[85,3600]],   // 상하로 지도를 벗어나지 않도록 고정 (좌우는 사실상 무제한)
   maxBoundsViscosity:1.0
 }).setView([25,40],2.4);
-map.attributionControl.setPrefix(false);
-map.attributionControl.addAttribution(
-  '&copy; OpenStreetMap &copy; CARTO<br>Copyright © 2026 Shinhyunsu. All Rights Reserved.');
+// 출처·저작권은 최하단 .credit 푸터가 표시 (OSM/CARTO 출처 표기 의무 충족)
 L.control.zoom({position:"bottomright"}).addTo(map);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",{
   subdomains:"abcd", maxZoom:19
