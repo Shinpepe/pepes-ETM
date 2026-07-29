@@ -17,6 +17,7 @@
     --amber:#ffb65c;        /* 도시의 불빛 */
     --amber-soft:rgba(255,182,92,.16);
     --teal:#59dcc9;         /* 내 발자국 */
+    --teal-soft:rgba(89,220,201,.15);
     --paper:#f2ecdf;        /* 따뜻한 흰색 */
     --muted:rgba(242,236,223,.62);
     --shadow:0 18px 50px rgba(0,0,0,.45);
@@ -33,7 +34,7 @@
   /* ── 상단 바 ─────────────────────────── */
   .topbar{
     position:fixed;top:0;left:0;right:0;z-index:1000;
-    display:flex;align-items:center;gap:12px;
+    display:flex;align-items:center;gap:10px;
     padding:14px 20px;
     background:linear-gradient(180deg, rgba(11,18,32,.92), rgba(11,18,32,0));
     pointer-events:none;
@@ -42,7 +43,7 @@
   .brand{display:flex;flex-direction:column;line-height:1.15;min-width:max-content;}
   .brand b{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:-.01em;}
   .brand span{font-size:11px;color:var(--muted);letter-spacing:.14em;}
-  .searchwrap{position:relative;flex:1;max-width:420px;}
+  .searchwrap{position:relative;flex:1;max-width:400px;}
   .searchwrap input{
     width:100%;padding:11px 14px 11px 38px;
     border-radius:999px;border:1px solid var(--line);
@@ -59,27 +60,28 @@
   }
   .suggest.open{display:block}
   .suggest button{
-    display:flex;width:100%;align-items:center;justify-content:space-between;
+    display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;
     padding:10px 14px;background:none;border:none;color:var(--paper);
     font-size:14px;font-family:var(--body);cursor:pointer;text-align:left;
   }
   .suggest button:hover,.suggest button:focus-visible{background:var(--amber-soft)}
-  .suggest small{color:var(--muted)}
+  .suggest small{color:var(--muted);white-space:nowrap;}
   .spacer{flex:1}
-  .userbox{display:flex;align-items:center;gap:10px;}
-  .userbox .who{font-size:13px;color:var(--muted);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .userbox{display:flex;align-items:center;gap:8px;}
   .btn{
     border:1px solid var(--line);border-radius:999px;
-    padding:10px 16px;font-size:14px;font-weight:600;font-family:var(--body);
+    padding:10px 15px;font-size:14px;font-weight:600;font-family:var(--body);
     background:rgba(17,27,44,.85);color:var(--paper);cursor:pointer;
-    transition:transform .12s, background .15s, border-color .15s;
+    transition:transform .12s, background .15s, border-color .15s, color .15s;
     white-space:nowrap;
   }
   .btn:hover{transform:translateY(-1px);border-color:rgba(255,182,92,.5)}
   .btn.primary{background:var(--amber);border-color:var(--amber);color:#231607;}
   .btn.primary:hover{background:#ffc678}
+  .btn.who{max-width:170px;overflow:hidden;text-overflow:ellipsis;}
+  .btn.mode.on{background:var(--teal);border-color:var(--teal);color:#062a25;}
   .btn:focus-visible,.suggest button:focus-visible,input:focus-visible,
-  select:focus-visible,textarea:focus-visible,.chip:focus-visible{
+  textarea:focus-visible,.chip:focus-visible,.bar:focus-visible{
     outline:2px solid var(--amber);outline-offset:2px;
   }
 
@@ -105,12 +107,17 @@
     position:fixed;left:20px;bottom:20px;z-index:901;
     background:rgba(17,27,44,.88);backdrop-filter:blur(8px);
     border:1px solid var(--line);border-radius:var(--radius);
-    padding:16px 18px;min-width:220px;box-shadow:var(--shadow);
+    padding:16px 18px;min-width:224px;box-shadow:var(--shadow);
+    transition:border-color .2s;
   }
+  .stats.mine{border-color:rgba(89,220,201,.45);}
   .stats h2{font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:10px;}
   .stats h2 em{font-style:normal;color:var(--amber);}
+  .stats.mine h2 em{color:var(--teal);}
   .stats .row{display:flex;justify-content:space-between;gap:16px;font-size:13px;padding:3px 0;color:var(--muted);}
   .stats .row b{color:var(--paper);font-variant-numeric:tabular-nums;}
+  .stats .journal-btn{width:100%;margin-top:10px;padding:8px;font-size:13px;display:none;}
+  .stats.mine .journal-btn{display:block;}
   .legend{display:flex;gap:14px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);}
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;}
   .dot.amber{background:var(--amber);box-shadow:0 0 8px var(--amber);}
@@ -130,7 +137,7 @@
     display:flex;flex-direction:column;box-shadow:var(--shadow);
   }
   .panel.open{transform:translateX(0)}
-  .panel-photo{position:relative;height:200px;background:var(--panel-2);flex-shrink:0;}
+  .panel-photo{position:relative;height:190px;background:var(--panel-2);flex-shrink:0;}
   .panel-photo img{width:100%;height:100%;object-fit:cover;display:block;}
   .panel-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(17,27,44,.15),rgba(17,27,44,.85) 92%);}
   .panel-photo .noimg{
@@ -144,10 +151,10 @@
   }
   .panel-head{position:absolute;left:20px;right:20px;bottom:14px;z-index:2;}
   .panel-head .country{font-size:12px;letter-spacing:.18em;color:var(--amber);}
-  .panel-head h2{font-family:var(--display);font-size:29px;font-weight:700;letter-spacing:-.01em;}
+  .panel-head h2{font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-.01em;}
   .panel-body{padding:18px 20px 24px;overflow-y:auto;flex:1;}
   .visitline{
-    display:flex;align-items:baseline;gap:8px;margin-bottom:14px;
+    display:flex;align-items:baseline;gap:8px;margin-bottom:12px;
     font-size:14px;color:var(--muted);flex-wrap:wrap;
   }
   .visitline b{font-family:var(--display);font-size:26px;color:var(--amber);font-variant-numeric:tabular-nums;}
@@ -156,6 +163,21 @@
     font-size:12px;letter-spacing:.16em;color:var(--muted);
     margin:18px 0 8px;text-transform:uppercase;
   }
+  /* 여행하기 좋은 시기 차트 */
+  .chartwrap{margin:4px 0 2px;}
+  .bars{display:flex;align-items:flex-end;gap:4px;height:56px;}
+  .bar{
+    flex:1;min-width:0;border:none;cursor:pointer;padding:0;
+    background:rgba(255,182,92,.28);border-radius:3px 3px 0 0;
+    transition:background .15s;position:relative;
+  }
+  .bar:hover{background:rgba(255,182,92,.55);}
+  .bar.best{background:var(--amber);box-shadow:0 0 10px rgba(255,182,92,.5);}
+  .bar.sel{outline:2px solid var(--teal);outline-offset:1px;}
+  .bar-labels{display:flex;gap:4px;margin-top:5px;}
+  .bar-labels span{flex:1;text-align:center;font-size:10px;color:var(--muted);}
+  .chart-note{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.5;}
+  .chart-note b{color:var(--amber);font-weight:600;}
   .spots{list-style:none}
   .spots li{
     padding:10px 0;border-bottom:1px solid var(--line);
@@ -164,23 +186,24 @@
   .spots li::before{content:'✦';color:var(--amber);font-size:11px;}
   .mytrips{list-style:none}
   .mytrips li{
-    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    display:flex;align-items:center;gap:8px;
     padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;
   }
   .mytrips .d{color:var(--teal);font-variant-numeric:tabular-nums;flex-shrink:0;}
-  .mytrips .r{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .mytrips .del{
-    border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px;
-    padding:2px 6px;border-radius:6px;flex-shrink:0;
+  .mytrips .r{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+  .mytrips .act{
+    border:none;background:none;color:var(--muted);cursor:pointer;font-size:12.5px;
+    padding:3px 7px;border-radius:6px;flex-shrink:0;font-family:var(--body);
   }
-  .mytrips .del:hover{color:#ff8f8f;background:rgba(255,143,143,.1);}
+  .mytrips .act:hover{color:var(--paper);background:var(--amber-soft);}
+  .mytrips .act.danger:hover{color:#ff8f8f;background:rgba(255,143,143,.1);}
   .reviews{list-style:none}
   .reviews li{padding:10px 0;border-bottom:1px solid var(--line);}
   .reviews .meta{font-size:12px;color:var(--muted);margin-bottom:3px;}
   .reviews .meta b{color:var(--amber);font-weight:600;}
   .reviews .txt{font-size:13.5px;line-height:1.6;}
   .emptynote{font-size:13px;color:var(--muted);padding:8px 0;line-height:1.6;}
-  .panel-actions{padding:0 20px 20px;flex-shrink:0;border-top:1px solid var(--line);padding-top:14px;}
+  .panel-actions{padding:14px 20px 20px;flex-shrink:0;border-top:1px solid var(--line);}
   .panel-actions .btn{width:100%;padding:13px;font-size:15px;}
   .wikinote{font-size:11px;color:var(--muted);margin-top:8px;text-align:center;}
 
@@ -191,12 +214,12 @@
   }
   .overlay.open{display:flex}
   .modal{
-    width:min(390px,100%);max-height:86vh;overflow-y:auto;
+    width:min(400px,100%);max-height:86vh;overflow-y:auto;
     background:var(--panel);border:1px solid var(--line);
     border-radius:20px;padding:26px;box-shadow:var(--shadow);
   }
   .modal h2{font-family:var(--display);font-size:22px;margin-bottom:4px;}
-  .modal .sub{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6;}
+  .modal .sub{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
   .modal label{display:block;font-size:12px;color:var(--muted);margin:12px 0 6px;}
   .modal input,.modal textarea{
     width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--line);
@@ -209,8 +232,12 @@
   .modal .btn{width:100%;margin-top:14px;padding:12px;}
   .modal .alt{margin-top:8px;background:transparent;}
   .modal .err{color:#ff8f8f;font-size:12.5px;margin-top:10px;min-height:16px;line-height:1.5;}
+  .modal .err.ok{color:var(--teal);}
   .modal .switch{margin-top:12px;font-size:13px;color:var(--muted);text-align:center;}
   .modal .switch a{color:var(--amber);cursor:pointer;text-decoration:underline;}
+  .modal .forgot{display:block;margin-top:8px;font-size:12.5px;color:var(--muted);
+    text-align:right;cursor:pointer;text-decoration:underline;}
+  .modal .forgot:hover{color:var(--amber);}
 
   /* ── 랭킹 ────────────────────────────── */
   .rank-list{list-style:none;margin-top:6px;}
@@ -218,7 +245,7 @@
     display:flex;align-items:center;gap:12px;
     padding:11px 4px;border-bottom:1px solid var(--line);font-size:14px;
   }
-  .rank-list li.me{background:rgba(89,220,201,.08);border-radius:10px;padding:11px 10px;}
+  .rank-list li.me{background:var(--teal-soft);border-radius:10px;padding:11px 10px;}
   .rank-list .no{
     font-family:var(--display);font-size:16px;width:26px;text-align:center;
     color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums;
@@ -230,6 +257,25 @@
   .rank-list .nm small{color:var(--teal);margin-left:6px;}
   .rank-list .ct{color:var(--muted);font-size:12.5px;text-align:right;flex-shrink:0;line-height:1.4;}
   .rank-list .ct b{color:var(--amber);font-size:15px;font-variant-numeric:tabular-nums;}
+
+  /* ── 여행 일지 ───────────────────────── */
+  .journal{list-style:none;}
+  .journal .year{
+    font-family:var(--display);font-size:17px;color:var(--amber);
+    padding:14px 0 6px;border-bottom:1px solid var(--line);
+  }
+  .journal .trip{
+    display:flex;align-items:baseline;gap:10px;width:100%;
+    padding:10px 4px;border:none;border-bottom:1px solid var(--line);
+    background:none;color:var(--paper);font-family:var(--body);font-size:14px;
+    cursor:pointer;text-align:left;
+  }
+  .journal .trip:hover{background:var(--teal-soft);border-radius:8px;}
+  .journal .trip .d{color:var(--teal);font-variant-numeric:tabular-nums;flex-shrink:0;font-size:13px;}
+  .journal .trip .city{font-weight:600;flex-shrink:0;}
+  .journal .trip .co{color:var(--muted);font-size:12px;flex-shrink:0;}
+  .journal .trip .rv{color:var(--muted);font-size:12.5px;flex:1;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
   /* 토스트 */
   .toast{
@@ -250,12 +296,18 @@
   }
   .leaflet-tooltip-top.city-tip::before{border-top-color:var(--panel)!important;}
   .leaflet-bottom.leaflet-right{margin-bottom:56px;}
+  .leaflet-control-attribution{
+    background:rgba(11,18,32,.75)!important;color:var(--muted)!important;
+    font-family:var(--body)!important;font-size:10.5px!important;
+    padding:3px 8px!important;border-radius:8px 0 0 0!important;
+  }
+  .leaflet-control-attribution a{color:var(--muted)!important;}
 
-  @media (max-width:640px){
+  @media (max-width:720px){
     .topbar{flex-wrap:wrap;padding:10px 12px;gap:8px;}
     .brand span{display:none}
     .searchwrap{order:3;min-width:100%;max-width:none;}
-    .userbox .who{display:none}
+    .btn.who{max-width:90px;}
     .months{bottom:10px;max-width:calc(100vw - 20px);}
     .stats{left:12px;bottom:66px;padding:12px 14px;min-width:0;}
     .stats .row{font-size:12px}
@@ -263,7 +315,7 @@
     .panel{top:auto;height:80%;width:100%;border-left:none;border-top:1px solid var(--line);
       border-radius:20px 20px 0 0;transform:translateY(105%);}
     .panel.open{transform:translateY(0)}
-    .panel-photo{height:150px;border-radius:20px 20px 0 0;overflow:hidden;}
+    .panel-photo{height:145px;border-radius:20px 20px 0 0;overflow:hidden;}
     .leaflet-bottom.leaflet-right{margin-bottom:112px;}
   }
   @media (prefers-reduced-motion: reduce){
@@ -282,10 +334,11 @@
   </div>
   <div class="searchwrap">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f2ecdf" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-    <input id="search" type="search" placeholder="도시를 검색해 발자국을 남겨보세요 (예: 파리)" autocomplete="off" aria-label="도시 검색" />
+    <input id="search" type="search" placeholder="도시 검색 (파리 / paris / ㅍㄹ)" autocomplete="off" aria-label="도시 검색" />
     <div class="suggest" id="suggest" role="listbox"></div>
   </div>
   <div class="spacer"></div>
+  <button class="btn mode" id="myModeBtn" aria-pressed="false">🧭 내 여행</button>
   <button class="btn" id="rankBtn">🏆 랭킹</button>
   <div class="userbox" id="userbox">
     <button class="btn primary" id="loginBtn">로그인</button>
@@ -295,11 +348,12 @@
 <!-- 월별 필터 -->
 <nav class="months" id="months" aria-label="월별 보기"></nav>
 
-<aside class="stats" aria-live="polite">
+<aside class="stats" id="statsBox" aria-live="polite">
   <h2 id="statsTitle">지금까지의 발자국</h2>
-  <div class="row"><span>기록된 여행</span><b id="statVisits">…</b></div>
-  <div class="row"><span>불이 켜진 도시</span><b id="statCities">…</b></div>
-  <div class="row"><span>나의 여행</span><b id="statMine">–</b></div>
+  <div class="row"><span id="statL1">기록된 여행</span><b id="statVisits">…</b></div>
+  <div class="row"><span id="statL2">불이 켜진 도시</span><b id="statCities">…</b></div>
+  <div class="row"><span id="statL3">나의 여행</span><b id="statMine">–</b></div>
+  <button class="btn journal-btn" id="journalBtn">📖 여행 일지 보기</button>
   <div class="legend">
     <span><i class="dot amber"></i>모두의 도시</span>
     <span><i class="dot teal"></i>나의 도시</span>
@@ -322,6 +376,8 @@
   <div class="panel-body">
     <div class="visitline"><b id="panelCount">0</b><span id="panelCountLabel">번의 여행이 이곳에 닿았어요</span></div>
     <p class="desc" id="panelDesc"></p>
+    <h3>여행하기 좋은 시기</h3>
+    <div class="chartwrap" id="chartWrap"></div>
     <h3>주요 관광지</h3>
     <ul class="spots" id="panelSpots"></ul>
     <div id="myTripsSection" style="display:none">
@@ -346,6 +402,11 @@
     <input id="authEmail" type="email" placeholder="you@example.com" />
     <label for="authPw">비밀번호</label>
     <input id="authPw" type="password" placeholder="6자 이상" />
+    <div id="authNickWrap" style="display:none">
+      <label for="authNick">닉네임 <span style="opacity:.6">(랭킹에 표시, 2~20자)</span></label>
+      <input id="authNick" type="text" maxlength="20" placeholder="예: 방랑자무민" />
+    </div>
+    <a class="forgot" id="authForgot">비밀번호를 잊으셨나요?</a>
     <button class="btn primary" id="authSubmit">로그인</button>
     <div class="err" id="authErr"></div>
     <div class="switch" id="authSwitch">아직 계정이 없나요? <a id="authToggle">가입하기</a></div>
@@ -353,7 +414,7 @@
   </div>
 </div>
 
-<!-- 방문 기록 모달 -->
+<!-- 방문 기록 모달 (신규/수정 겸용) -->
 <div class="overlay" id="visitOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="visitTitle">
     <h2 id="visitTitle">발자국 남기기</h2>
@@ -369,13 +430,36 @@
   </div>
 </div>
 
+<!-- 닉네임/프로필 모달 -->
+<div class="overlay" id="profileOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+    <h2 id="profileTitle">닉네임 설정</h2>
+    <p class="sub">랭킹에는 닉네임 전체가, 후기에는 앞 3자만 표시돼요.<br/>(예: shin0504 → shi*****)</p>
+    <label for="profileNick">닉네임 (2~20자)</label>
+    <input id="profileNick" type="text" maxlength="20" placeholder="예: 방랑자무민" />
+    <button class="btn primary" id="profileSave">저장</button>
+    <div class="err" id="profileErr"></div>
+    <button class="btn alt" id="profileCancel">나중에 할게요</button>
+  </div>
+</div>
+
 <!-- 랭킹 모달 -->
 <div class="overlay" id="rankOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rankTitle">
     <h2 id="rankTitle">🏆 여행자 랭킹</h2>
-    <p class="sub" id="rankSub">가장 많은 발자국을 남긴 여행자들이에요.</p>
+    <p class="sub">가장 많은 발자국을 남긴 여행자들이에요.</p>
     <ol class="rank-list" id="rankList"></ol>
     <button class="btn alt" id="rankClose">닫기</button>
+  </div>
+</div>
+
+<!-- 여행 일지 모달 -->
+<div class="overlay" id="journalOverlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="journalTitle">
+    <h2 id="journalTitle">📖 나의 여행 일지</h2>
+    <p class="sub" id="journalSub"></p>
+    <ul class="journal" id="journalList"></ul>
+    <button class="btn alt" id="journalClose">닫기</button>
   </div>
 </div>
 
@@ -397,130 +481,130 @@ const firebaseConfig = {
 const DEMO = firebaseConfig.apiKey === "YOUR_API_KEY";
 
 /* ══════════════════════════════════════════════════════════════
-   2) 도시 데이터 (큐레이션 · 113곳)
+   2) 도시 데이터 (큐레이션 · 113곳 / e: 영문 검색어)
 ══════════════════════════════════════════════════════════════ */
 const CITIES = [
  // ── 대한민국·일본 ──
- {id:"seoul",n:"서울",c:"대한민국",lat:37.5665,lng:126.978,w:"서울특별시",d:"고궁과 초고층 빌딩이 공존하는 대한민국의 수도.",s:["경복궁","북촌 한옥마을","N서울타워"]},
- {id:"busan",n:"부산",c:"대한민국",lat:35.1796,lng:129.0756,w:"부산광역시",d:"바다와 산이 어우러진 항구 도시.",s:["해운대 해수욕장","감천문화마을","광안대교"]},
- {id:"jeju",n:"제주",c:"대한민국",lat:33.4996,lng:126.5312,w:"제주시",d:"화산이 빚은 섬, 한국인의 영원한 휴양지.",s:["성산일출봉","한라산","협재 해수욕장"]},
- {id:"gyeongju",n:"경주",c:"대한민국",lat:35.8562,lng:129.2247,w:"경주시",d:"지붕 없는 박물관, 천 년 신라의 수도.",s:["불국사","석굴암","동궁과 월지"]},
- {id:"tokyo",n:"도쿄",c:"일본",lat:35.6762,lng:139.6503,w:"도쿄도",d:"전통과 첨단이 뒤섞인 일본의 수도.",s:["센소지","시부야 스크램블","도쿄 스카이트리"]},
- {id:"osaka",n:"오사카",c:"일본",lat:34.6937,lng:135.5023,w:"오사카시",d:"먹거리의 천국, 활기 넘치는 간사이의 중심.",s:["도톤보리","오사카성","유니버설 스튜디오 재팬"]},
- {id:"kyoto",n:"교토",c:"일본",lat:35.0116,lng:135.7681,w:"교토시",d:"천 년 고도의 사찰과 골목길.",s:["후시미 이나리 신사","기요미즈데라","아라시야마 대나무숲"]},
- {id:"fukuoka",n:"후쿠오카",c:"일본",lat:33.5904,lng:130.4017,w:"후쿠오카시",d:"라멘과 야타이(포장마차)의 도시.",s:["다자이후 텐만구","캐널시티","오호리 공원"]},
- {id:"sapporo",n:"삿포로",c:"일본",lat:43.0618,lng:141.3545,w:"삿포로시",d:"눈축제와 맥주의 홋카이도 중심 도시.",s:["오도리 공원","삿포로 맥주 박물관","모이와야마 전망대"]},
- {id:"nagoya",n:"나고야",c:"일본",lat:35.1815,lng:136.9066,w:"나고야시",d:"성과 미소카츠, 주부 지방의 중심.",s:["나고야성","오스 상점가","아츠타 신궁"]},
- {id:"okinawa",n:"오키나와(나하)",c:"일본",lat:26.2124,lng:127.6809,w:"나하시",d:"에메랄드빛 바다의 일본 남쪽 휴양지.",s:["슈리성","츄라우미 수족관","고쿠사이도리"]},
+ {id:"seoul",e:"Seoul",n:"서울",c:"대한민국",lat:37.5665,lng:126.978,w:"서울특별시",d:"고궁과 초고층 빌딩이 공존하는 대한민국의 수도.",s:["경복궁","북촌 한옥마을","N서울타워"]},
+ {id:"busan",e:"Busan",n:"부산",c:"대한민국",lat:35.1796,lng:129.0756,w:"부산광역시",d:"바다와 산이 어우러진 항구 도시.",s:["해운대 해수욕장","감천문화마을","광안대교"]},
+ {id:"jeju",e:"Jeju",n:"제주",c:"대한민국",lat:33.4996,lng:126.5312,w:"제주시",d:"화산이 빚은 섬, 한국인의 영원한 휴양지.",s:["성산일출봉","한라산","협재 해수욕장"]},
+ {id:"gyeongju",e:"Gyeongju",n:"경주",c:"대한민국",lat:35.8562,lng:129.2247,w:"경주시",d:"지붕 없는 박물관, 천 년 신라의 수도.",s:["불국사","석굴암","동궁과 월지"]},
+ {id:"tokyo",e:"Tokyo",n:"도쿄",c:"일본",lat:35.6762,lng:139.6503,w:"도쿄도",d:"전통과 첨단이 뒤섞인 일본의 수도.",s:["센소지","시부야 스크램블","도쿄 스카이트리"]},
+ {id:"osaka",e:"Osaka",n:"오사카",c:"일본",lat:34.6937,lng:135.5023,w:"오사카시",d:"먹거리의 천국, 활기 넘치는 간사이의 중심.",s:["도톤보리","오사카성","유니버설 스튜디오 재팬"]},
+ {id:"kyoto",e:"Kyoto",n:"교토",c:"일본",lat:35.0116,lng:135.7681,w:"교토시",d:"천 년 고도의 사찰과 골목길.",s:["후시미 이나리 신사","기요미즈데라","아라시야마 대나무숲"]},
+ {id:"fukuoka",e:"Fukuoka",n:"후쿠오카",c:"일본",lat:33.5904,lng:130.4017,w:"후쿠오카시",d:"라멘과 야타이(포장마차)의 도시.",s:["다자이후 텐만구","캐널시티","오호리 공원"]},
+ {id:"sapporo",e:"Sapporo",n:"삿포로",c:"일본",lat:43.0618,lng:141.3545,w:"삿포로시",d:"눈축제와 맥주의 홋카이도 중심 도시.",s:["오도리 공원","삿포로 맥주 박물관","모이와야마 전망대"]},
+ {id:"nagoya",e:"Nagoya",n:"나고야",c:"일본",lat:35.1815,lng:136.9066,w:"나고야시",d:"성과 미소카츠, 주부 지방의 중심.",s:["나고야성","오스 상점가","아츠타 신궁"]},
+ {id:"okinawa",e:"Okinawa Naha",n:"오키나와(나하)",c:"일본",lat:26.2124,lng:127.6809,w:"나하시",d:"에메랄드빛 바다의 일본 남쪽 휴양지.",s:["슈리성","츄라우미 수족관","고쿠사이도리"]},
  // ── 아시아 ──
- {id:"taipei",n:"타이베이",c:"대만",lat:25.033,lng:121.5654,w:"타이베이시",d:"야시장과 온천, 정 많은 대만의 수도.",s:["타이베이 101","스린 야시장","지우펀(근교)"]},
- {id:"hongkong",n:"홍콩",c:"홍콩",lat:22.3193,lng:114.1694,w:"홍콩",d:"백만 불짜리 야경의 동서양 교차점.",s:["빅토리아 피크","침사추이 해변산책로","란콰이퐁"]},
- {id:"macau",n:"마카오",c:"마카오",lat:22.1987,lng:113.5439,w:"마카오",d:"포르투갈 정취와 카지노가 공존하는 도시.",s:["세나도 광장","성 바울 성당 유적","마카오 타워"]},
- {id:"beijing",n:"베이징",c:"중국",lat:39.9042,lng:116.4074,w:"베이징시",d:"만리장성과 자금성의 대륙 수도.",s:["만리장성","자금성","천안문 광장"]},
- {id:"shanghai",n:"상하이",c:"중국",lat:31.2304,lng:121.4737,w:"상하이시",d:"와이탄 야경이 빛나는 국제 도시.",s:["와이탄","위위안(예원)","동방명주 타워"]},
- {id:"xian",n:"시안",c:"중국",lat:34.3416,lng:108.9398,w:"시안시",d:"병마용과 실크로드의 출발점, 고도 장안.",s:["진시황 병마용","시안 성벽","대안탑"]},
- {id:"chengdu",n:"청두",c:"중국",lat:30.5728,lng:104.0668,w:"청두시",d:"판다와 마라의 고향, 쓰촨의 중심.",s:["판다 기지","콴자이샹쯔","러산 대불(근교)"]},
- {id:"bangkok",n:"방콕",c:"태국",lat:13.7563,lng:100.5018,w:"방콕",d:"사원과 수상시장, 열기의 도시.",s:["왓 아룬","카오산 로드","짜뚜짝 시장"]},
- {id:"chiangmai",n:"치앙마이",c:"태국",lat:18.7883,lng:98.9853,w:"치앙마이",d:"한 달 살기 성지, 태국 북부의 고도.",s:["도이수텝 사원","님만해민 거리","선데이 마켓"]},
- {id:"phuket",n:"푸켓",c:"태국",lat:7.8804,lng:98.3923,w:"푸껫섬",d:"안다만해의 진주, 태국 최대 휴양 섬.",s:["빠통 비치","피피섬 투어","빅 붓다"]},
- {id:"singapore",n:"싱가포르",c:"싱가포르",lat:1.3521,lng:103.8198,w:"싱가포르",d:"정원 속 미래 도시 국가.",s:["가든스 바이 더 베이","마리나 베이 샌즈","센토사 섬"]},
- {id:"kualalumpur",n:"쿠알라룸푸르",c:"말레이시아",lat:3.139,lng:101.6869,w:"쿠알라룸푸르",d:"쌍둥이 빌딩이 솟은 다문화 수도.",s:["페트로나스 트윈 타워","바투 동굴","부킷 빈탕"]},
- {id:"kotakinabalu",n:"코타키나발루",c:"말레이시아",lat:5.9804,lng:116.0735,w:"코타키나발루",d:"석양이 아름다운 보르네오의 휴양지.",s:["탄중아루 해변 석양","사피섬 호핑","키나발루산(근교)"]},
- {id:"bali",n:"발리",c:"인도네시아",lat:-8.6705,lng:115.2126,w:"발리섬",d:"신들의 섬, 서퍼와 요가인의 낙원.",s:["우붓 몽키 포레스트","따나롯 사원","꾸따 비치"]},
- {id:"hanoi",n:"하노이",c:"베트남",lat:21.0278,lng:105.8342,w:"하노이",d:"쌀국수 향 가득한 베트남의 수도.",s:["호안끼엠 호수","하노이 구시가지","하롱베이(근교)"]},
- {id:"danang",n:"다낭",c:"베트남",lat:16.0544,lng:108.2022,w:"다낭",d:"미케 비치와 바나힐의 휴양 도시.",s:["미케 비치","바나힐 골든브릿지","호이안(근교)"]},
- {id:"hochiminh",n:"호치민",c:"베트남",lat:10.8231,lng:106.6297,w:"호찌민시",d:"오토바이 물결이 흐르는 남부 경제 수도.",s:["벤탄 시장","노트르담 대성당","사이공 중앙우체국"]},
- {id:"nhatrang",n:"나트랑",c:"베트남",lat:12.2388,lng:109.1967,w:"냐짱",d:"긴 백사장과 머드 온천의 해변 도시.",s:["빈원더스 나트랑","포나가르 탑","혼문섬 호핑"]},
- {id:"phuquoc",n:"푸꾸옥",c:"베트남",lat:10.2899,lng:103.984,w:"푸꾸옥섬",d:"베트남의 보석 같은 남쪽 섬.",s:["사오 비치","혼똔 케이블카","야시장"]},
- {id:"cebu",n:"세부",c:"필리핀",lat:10.3157,lng:123.8854,w:"세부",d:"에메랄드빛 바다의 다이빙 성지.",s:["카와산 폭포","오슬롭 고래상어 투어","막탄 아일랜드 호핑"]},
- {id:"boracay",n:"보라카이",c:"필리핀",lat:11.9674,lng:121.9248,w:"보라카이섬",d:"세계적으로 손꼽히는 화이트 비치의 섬.",s:["화이트 비치","디몰","선셋 세일링"]},
- {id:"manila",n:"마닐라",c:"필리핀",lat:14.5995,lng:120.9842,w:"마닐라",d:"스페인 유산이 남은 필리핀의 수도.",s:["인트라무로스","리잘 공원","산 아구스틴 성당"]},
- {id:"male",n:"몰디브(말레)",c:"몰디브",lat:4.1755,lng:73.5093,w:"말레",d:"산호초 위 수상 방갈로의 허니문 성지.",s:["리조트 스노클링","수상 방갈로","돌고래 크루즈"]},
- {id:"kathmandu",n:"카트만두",c:"네팔",lat:27.7172,lng:85.324,w:"카트만두",d:"히말라야 트레킹의 관문 도시.",s:["스와얌부나트(몽키 템플)","더르바르 광장","타멜 거리"]},
- {id:"delhi",n:"델리",c:"인도",lat:28.6139,lng:77.209,w:"델리",d:"혼돈과 매혹이 공존하는 인도의 관문.",s:["레드 포트","인디아 게이트","타지마할(근교 아그라)"]},
- {id:"jaipur",n:"자이푸르",c:"인도",lat:26.9124,lng:75.7873,w:"자이푸르",d:"핑크 시티, 라자스탄의 보석.",s:["암베르 요새","하와 마할","시티 팰리스"]},
+ {id:"taipei",e:"Taipei",n:"타이베이",c:"대만",lat:25.033,lng:121.5654,w:"타이베이시",d:"야시장과 온천, 정 많은 대만의 수도.",s:["타이베이 101","스린 야시장","지우펀(근교)"]},
+ {id:"hongkong",e:"Hong Kong",n:"홍콩",c:"홍콩",lat:22.3193,lng:114.1694,w:"홍콩",d:"백만 불짜리 야경의 동서양 교차점.",s:["빅토리아 피크","침사추이 해변산책로","란콰이퐁"]},
+ {id:"macau",e:"Macau",n:"마카오",c:"마카오",lat:22.1987,lng:113.5439,w:"마카오",d:"포르투갈 정취와 카지노가 공존하는 도시.",s:["세나도 광장","성 바울 성당 유적","마카오 타워"]},
+ {id:"beijing",e:"Beijing",n:"베이징",c:"중국",lat:39.9042,lng:116.4074,w:"베이징시",d:"만리장성과 자금성의 대륙 수도.",s:["만리장성","자금성","천안문 광장"]},
+ {id:"shanghai",e:"Shanghai",n:"상하이",c:"중국",lat:31.2304,lng:121.4737,w:"상하이시",d:"와이탄 야경이 빛나는 국제 도시.",s:["와이탄","위위안(예원)","동방명주 타워"]},
+ {id:"xian",e:"Xian",n:"시안",c:"중국",lat:34.3416,lng:108.9398,w:"시안시",d:"병마용과 실크로드의 출발점, 고도 장안.",s:["진시황 병마용","시안 성벽","대안탑"]},
+ {id:"chengdu",e:"Chengdu",n:"청두",c:"중국",lat:30.5728,lng:104.0668,w:"청두시",d:"판다와 마라의 고향, 쓰촨의 중심.",s:["판다 기지","콴자이샹쯔","러산 대불(근교)"]},
+ {id:"bangkok",e:"Bangkok",n:"방콕",c:"태국",lat:13.7563,lng:100.5018,w:"방콕",d:"사원과 수상시장, 열기의 도시.",s:["왓 아룬","카오산 로드","짜뚜짝 시장"]},
+ {id:"chiangmai",e:"Chiang Mai",n:"치앙마이",c:"태국",lat:18.7883,lng:98.9853,w:"치앙마이",d:"한 달 살기 성지, 태국 북부의 고도.",s:["도이수텝 사원","님만해민 거리","선데이 마켓"]},
+ {id:"phuket",e:"Phuket",n:"푸켓",c:"태국",lat:7.8804,lng:98.3923,w:"푸껫섬",d:"안다만해의 진주, 태국 최대 휴양 섬.",s:["빠통 비치","피피섬 투어","빅 붓다"]},
+ {id:"singapore",e:"Singapore",n:"싱가포르",c:"싱가포르",lat:1.3521,lng:103.8198,w:"싱가포르",d:"정원 속 미래 도시 국가.",s:["가든스 바이 더 베이","마리나 베이 샌즈","센토사 섬"]},
+ {id:"kualalumpur",e:"Kuala Lumpur",n:"쿠알라룸푸르",c:"말레이시아",lat:3.139,lng:101.6869,w:"쿠알라룸푸르",d:"쌍둥이 빌딩이 솟은 다문화 수도.",s:["페트로나스 트윈 타워","바투 동굴","부킷 빈탕"]},
+ {id:"kotakinabalu",e:"Kota Kinabalu",n:"코타키나발루",c:"말레이시아",lat:5.9804,lng:116.0735,w:"코타키나발루",d:"석양이 아름다운 보르네오의 휴양지.",s:["탄중아루 해변 석양","사피섬 호핑","키나발루산(근교)"]},
+ {id:"bali",e:"Bali",n:"발리",c:"인도네시아",lat:-8.6705,lng:115.2126,w:"발리섬",d:"신들의 섬, 서퍼와 요가인의 낙원.",s:["우붓 몽키 포레스트","따나롯 사원","꾸따 비치"]},
+ {id:"hanoi",e:"Hanoi",n:"하노이",c:"베트남",lat:21.0278,lng:105.8342,w:"하노이",d:"쌀국수 향 가득한 베트남의 수도.",s:["호안끼엠 호수","하노이 구시가지","하롱베이(근교)"]},
+ {id:"danang",e:"Da Nang",n:"다낭",c:"베트남",lat:16.0544,lng:108.2022,w:"다낭",d:"미케 비치와 바나힐의 휴양 도시.",s:["미케 비치","바나힐 골든브릿지","호이안(근교)"]},
+ {id:"hochiminh",e:"Ho Chi Minh",n:"호치민",c:"베트남",lat:10.8231,lng:106.6297,w:"호찌민시",d:"오토바이 물결이 흐르는 남부 경제 수도.",s:["벤탄 시장","노트르담 대성당","사이공 중앙우체국"]},
+ {id:"nhatrang",e:"Nha Trang",n:"나트랑",c:"베트남",lat:12.2388,lng:109.1967,w:"냐짱",d:"긴 백사장과 머드 온천의 해변 도시.",s:["빈원더스 나트랑","포나가르 탑","혼문섬 호핑"]},
+ {id:"phuquoc",e:"Phu Quoc",n:"푸꾸옥",c:"베트남",lat:10.2899,lng:103.984,w:"푸꾸옥섬",d:"베트남의 보석 같은 남쪽 섬.",s:["사오 비치","혼똔 케이블카","야시장"]},
+ {id:"cebu",e:"Cebu",n:"세부",c:"필리핀",lat:10.3157,lng:123.8854,w:"세부",d:"에메랄드빛 바다의 다이빙 성지.",s:["카와산 폭포","오슬롭 고래상어 투어","막탄 아일랜드 호핑"]},
+ {id:"boracay",e:"Boracay",n:"보라카이",c:"필리핀",lat:11.9674,lng:121.9248,w:"보라카이섬",d:"세계적으로 손꼽히는 화이트 비치의 섬.",s:["화이트 비치","디몰","선셋 세일링"]},
+ {id:"manila",e:"Manila",n:"마닐라",c:"필리핀",lat:14.5995,lng:120.9842,w:"마닐라",d:"스페인 유산이 남은 필리핀의 수도.",s:["인트라무로스","리잘 공원","산 아구스틴 성당"]},
+ {id:"male",e:"Maldives Male",n:"몰디브(말레)",c:"몰디브",lat:4.1755,lng:73.5093,w:"말레",d:"산호초 위 수상 방갈로의 허니문 성지.",s:["리조트 스노클링","수상 방갈로","돌고래 크루즈"]},
+ {id:"kathmandu",e:"Kathmandu",n:"카트만두",c:"네팔",lat:27.7172,lng:85.324,w:"카트만두",d:"히말라야 트레킹의 관문 도시.",s:["스와얌부나트(몽키 템플)","더르바르 광장","타멜 거리"]},
+ {id:"delhi",e:"Delhi",n:"델리",c:"인도",lat:28.6139,lng:77.209,w:"델리",d:"혼돈과 매혹이 공존하는 인도의 관문.",s:["레드 포트","인디아 게이트","타지마할(근교 아그라)"]},
+ {id:"jaipur",e:"Jaipur",n:"자이푸르",c:"인도",lat:26.9124,lng:75.7873,w:"자이푸르",d:"핑크 시티, 라자스탄의 보석.",s:["암베르 요새","하와 마할","시티 팰리스"]},
  // ── 중동 ──
- {id:"dubai",n:"두바이",c:"아랍에미리트",lat:25.2048,lng:55.2708,w:"두바이",d:"사막 위에 세운 초현실 도시.",s:["부르즈 할리파","두바이 몰","사막 사파리"]},
- {id:"abudhabi",n:"아부다비",c:"아랍에미리트",lat:24.4539,lng:54.3773,w:"아부다비",d:"그랜드 모스크가 빛나는 UAE의 수도.",s:["셰이크 자이드 그랜드 모스크","루브르 아부다비","페라리 월드"]},
- {id:"doha",n:"도하",c:"카타르",lat:25.2854,lng:51.531,w:"도하",d:"전통 시장과 미래 스카이라인의 공존.",s:["수크 와키프","이슬람 예술 박물관","코르니쉬 해안"]},
- {id:"istanbul",n:"이스탄불",c:"튀르키예",lat:41.0082,lng:28.9784,w:"이스탄불",d:"두 대륙에 걸친 제국의 수도.",s:["아야소피아","블루 모스크","그랜드 바자르"]},
- {id:"cappadocia",n:"카파도키아(괴레메)",c:"튀르키예",lat:38.6431,lng:34.8289,w:"괴레메",d:"열기구가 떠오르는 기암괴석의 땅.",s:["열기구 투어","괴레메 야외 박물관","데린쿠유 지하도시"]},
+ {id:"dubai",e:"Dubai",n:"두바이",c:"아랍에미리트",lat:25.2048,lng:55.2708,w:"두바이",d:"사막 위에 세운 초현실 도시.",s:["부르즈 할리파","두바이 몰","사막 사파리"]},
+ {id:"abudhabi",e:"Abu Dhabi",n:"아부다비",c:"아랍에미리트",lat:24.4539,lng:54.3773,w:"아부다비",d:"그랜드 모스크가 빛나는 UAE의 수도.",s:["셰이크 자이드 그랜드 모스크","루브르 아부다비","페라리 월드"]},
+ {id:"doha",e:"Doha",n:"도하",c:"카타르",lat:25.2854,lng:51.531,w:"도하",d:"전통 시장과 미래 스카이라인의 공존.",s:["수크 와키프","이슬람 예술 박물관","코르니쉬 해안"]},
+ {id:"istanbul",e:"Istanbul",n:"이스탄불",c:"튀르키예",lat:41.0082,lng:28.9784,w:"이스탄불",d:"두 대륙에 걸친 제국의 수도.",s:["아야소피아","블루 모스크","그랜드 바자르"]},
+ {id:"cappadocia",e:"Cappadocia Goreme",n:"카파도키아(괴레메)",c:"튀르키예",lat:38.6431,lng:34.8289,w:"괴레메",d:"열기구가 떠오르는 기암괴석의 땅.",s:["열기구 투어","괴레메 야외 박물관","데린쿠유 지하도시"]},
  // ── 유럽 ──
- {id:"london",n:"런던",c:"영국",lat:51.5074,lng:-0.1278,w:"런던",d:"박물관과 펍, 안개의 도시.",s:["빅 벤 & 국회의사당","대영박물관","타워 브리지"]},
- {id:"edinburgh",n:"에든버러",c:"영국",lat:55.9533,lng:-3.1883,w:"에든버러",d:"고성과 축제의 스코틀랜드 수도.",s:["에든버러성","로열 마일","아서스 시트"]},
- {id:"dublin",n:"더블린",c:"아일랜드",lat:53.3498,lng:-6.2603,w:"더블린",d:"기네스와 문학의 도시.",s:["기네스 스토어하우스","트리니티 칼리지","템플 바"]},
- {id:"paris",n:"파리",c:"프랑스",lat:48.8566,lng:2.3522,w:"파리 (프랑스)",d:"예술과 낭만, 모두의 로망.",s:["에펠탑","루브르 박물관","몽마르트르 언덕"]},
- {id:"nice",n:"니스",c:"프랑스",lat:43.7102,lng:7.262,w:"니스 (프랑스)",d:"코발트빛 지중해의 프렌치 리비에라.",s:["프롬나드 데장글레","니스 구시가","모나코(근교)"]},
- {id:"rome",n:"로마",c:"이탈리아",lat:41.9028,lng:12.4964,w:"로마",d:"도시 전체가 박물관인 영원의 도시.",s:["콜로세움","트레비 분수","바티칸 시국"]},
- {id:"florence",n:"피렌체",c:"이탈리아",lat:43.7696,lng:11.2558,w:"피렌체",d:"르네상스가 태어난 예술의 요람.",s:["두오모 대성당","우피치 미술관","베키오 다리"]},
- {id:"venice",n:"베네치아",c:"이탈리아",lat:45.4408,lng:12.3155,w:"베네치아",d:"물 위에 떠 있는 운하의 도시.",s:["산 마르코 광장","리알토 다리","곤돌라 투어"]},
- {id:"milan",n:"밀라노",c:"이탈리아",lat:45.4642,lng:9.19,w:"밀라노",d:"패션과 두오모, 북이탈리아의 심장.",s:["밀라노 두오모","갈레리아","최후의 만찬(산타 마리아 델레 그라치에)"]},
- {id:"naples",n:"나폴리",c:"이탈리아",lat:40.8518,lng:14.2681,w:"나폴리",d:"피자의 고향, 폼페이와 아말피의 관문.",s:["폼페이(근교)","스파카나폴리","아말피 해안(근교)"]},
- {id:"barcelona",n:"바르셀로나",c:"스페인",lat:41.3874,lng:2.1686,w:"바르셀로나",d:"가우디의 상상력이 살아있는 지중해 도시.",s:["사그라다 파밀리아","구엘 공원","람블라스 거리"]},
- {id:"madrid",n:"마드리드",c:"스페인",lat:40.4168,lng:-3.7038,w:"마드리드",d:"태양과 하몽, 스페인의 심장.",s:["프라도 미술관","레티로 공원","마요르 광장"]},
- {id:"seville",n:"세비야",c:"스페인",lat:37.3891,lng:-5.9845,w:"세비야",d:"플라멩코와 오렌지 향의 안달루시아 수도.",s:["세비야 대성당","스페인 광장","알카사르"]},
- {id:"granada",n:"그라나다",c:"스페인",lat:37.1773,lng:-3.5986,w:"그라나다",d:"알람브라의 추억이 흐르는 도시.",s:["알람브라 궁전","알바이신 지구","타파스 골목"]},
- {id:"lisbon",n:"리스본",c:"포르투갈",lat:38.7223,lng:-9.1393,w:"리스본",d:"노란 트램이 언덕을 오르는 대서양의 도시.",s:["벨렝 탑","알파마 지구","제로니무스 수도원"]},
- {id:"porto",n:"포르투",c:"포르투갈",lat:41.1579,lng:-8.6291,w:"포르투",d:"포트와인과 아줄레주의 강변 도시.",s:["동 루이스 1세 다리","렐루 서점","히베이라 지구"]},
- {id:"amsterdam",n:"암스테르담",c:"네덜란드",lat:52.3676,lng:4.9041,w:"암스테르담",d:"운하와 자전거, 자유로운 공기.",s:["반 고흐 미술관","안네 프랑크의 집","운하 크루즈"]},
- {id:"brussels",n:"브뤼셀",c:"벨기에",lat:50.8503,lng:4.3517,w:"브뤼셀",d:"와플과 초콜릿, 유럽의 수도.",s:["그랑 플라스","오줌싸개 동상","아토미움"]},
- {id:"bruges",n:"브뤼헤",c:"벨기에",lat:51.2093,lng:3.2247,w:"브뤼허",d:"중세가 그대로 멈춘 운하 마을.",s:["마르크트 광장","종탑(벨포트)","운하 보트 투어"]},
- {id:"berlin",n:"베를린",c:"독일",lat:52.52,lng:13.405,w:"베를린",d:"역사와 예술이 뒤섞인 자유의 도시.",s:["브란덴부르크 문","베를린 장벽 이스트사이드 갤러리","박물관 섬"]},
- {id:"munich",n:"뮌헨",c:"독일",lat:48.1351,lng:11.582,w:"뮌헨",d:"맥주와 알프스 관문, 바이에른의 수도.",s:["마리엔 광장","님펜부르크 궁전","호프브로이하우스"]},
- {id:"frankfurt",n:"프랑크푸르트",c:"독일",lat:50.1109,lng:8.6821,w:"프랑크푸르트암마인",d:"유럽 여행의 관문, 마인강의 금융 도시.",s:["뢰머 광장","마인 타워","작센하우젠"]},
- {id:"prague",n:"프라하",c:"체코",lat:50.0755,lng:14.4378,w:"프라하",d:"백탑의 도시, 동화 같은 야경.",s:["카를교","프라하성","구시가 광장 천문시계"]},
- {id:"vienna",n:"빈",c:"오스트리아",lat:48.2082,lng:16.3738,w:"빈",d:"음악과 카페 문화의 수도.",s:["쇤브룬 궁전","슈테판 대성당","벨베데레 궁전"]},
- {id:"salzburg",n:"잘츠부르크",c:"오스트리아",lat:47.8095,lng:13.055,w:"잘츠부르크",d:"모차르트와 사운드 오브 뮤직의 도시.",s:["호엔잘츠부르크 요새","미라벨 정원","게트라이데 거리"]},
- {id:"budapest",n:"부다페스트",c:"헝가리",lat:47.4979,lng:19.0402,w:"부다페스트",d:"다뉴브강 야경이 아름다운 온천 도시.",s:["국회의사당","세체니 온천","어부의 요새"]},
- {id:"krakow",n:"크라쿠프",c:"폴란드",lat:50.0647,lng:19.945,w:"크라쿠프",d:"폴란드의 옛 수도, 중세 광장의 도시.",s:["중앙 광장(리네크)","바벨성","비엘리치카 소금광산(근교)"]},
- {id:"zagreb",n:"자그레브",c:"크로아티아",lat:45.815,lng:15.9819,w:"자그레브",d:"플리트비체로 가는 크로아티아의 수도.",s:["반 옐라치치 광장","성 마르코 성당","플리트비체 호수(근교)"]},
- {id:"dubrovnik",n:"두브로브니크",c:"크로아티아",lat:42.6507,lng:18.0944,w:"두브로브니크",d:"아드리아해의 진주, 성벽의 도시.",s:["구시가 성벽 걷기","스르지산 케이블카","반예 비치"]},
- {id:"zurich",n:"취리히",c:"스위스",lat:47.3769,lng:8.5417,w:"취리히",d:"호수와 알프스로 가는 스위스의 관문.",s:["취리히 호수","반호프 거리","루체른(근교)"]},
- {id:"interlaken",n:"인터라켄",c:"스위스",lat:46.6863,lng:7.8632,w:"인터라켄",d:"융프라우로 가는 알프스 베이스캠프.",s:["융프라우요흐","하르더 쿨름","패러글라이딩"]},
- {id:"athens",n:"아테네",c:"그리스",lat:37.9838,lng:23.7275,w:"아테네",d:"서양 문명이 시작된 곳.",s:["아크로폴리스","파르테논 신전","플라카 지구"]},
- {id:"santorini",n:"산토리니",c:"그리스",lat:36.3932,lng:25.4615,w:"산토리니섬",d:"파란 지붕과 하얀 벽, 에게해의 보석.",s:["이아 마을 석양","피라 마을","레드 비치"]},
- {id:"valletta",n:"몰타(발레타)",c:"몰타",lat:35.8989,lng:14.5146,w:"발레타",d:"지중해 한가운데 기사단의 요새 도시.",s:["성 요한 대성당","어퍼 바라카 가든","블루 그로토"]},
- {id:"helsinki",n:"헬싱키",c:"핀란드",lat:60.1699,lng:24.9384,w:"헬싱키",d:"디자인과 사우나의 북유럽 수도.",s:["헬싱키 대성당","수오멘린나 요새","템펠리아우키오 교회"]},
- {id:"stockholm",n:"스톡홀름",c:"스웨덴",lat:59.3293,lng:18.0686,w:"스톡홀름",d:"14개의 섬으로 이루어진 북유럽의 베네치아.",s:["감라스탄 구시가","바사 박물관","시청사"]},
- {id:"copenhagen",n:"코펜하겐",c:"덴마크",lat:55.6761,lng:12.5683,w:"코펜하겐",d:"휘게의 본고장, 자전거의 도시.",s:["뉘하운","인어공주 동상","티볼리 공원"]},
- {id:"oslo",n:"오슬로",c:"노르웨이",lat:59.9139,lng:10.7522,w:"오슬로",d:"피오르로 가는 노르웨이의 수도.",s:["오페라 하우스","비겔란 조각공원","뭉크 미술관"]},
- {id:"reykjavik",n:"레이캬비크",c:"아이슬란드",lat:64.1466,lng:-21.9426,w:"레이캬비크",d:"오로라와 온천, 불과 얼음의 나라.",s:["할그림스키르캬 교회","블루 라군","골든 서클 투어"]},
- {id:"tallinn",n:"탈린",c:"에스토니아",lat:59.437,lng:24.7536,w:"탈린",d:"중세 성벽이 완벽히 남은 발트해의 보석.",s:["구시가(올드타운)","알렉산더 네프스키 대성당","톰페아 전망대"]},
+ {id:"london",e:"London",n:"런던",c:"영국",lat:51.5074,lng:-0.1278,w:"런던",d:"박물관과 펍, 안개의 도시.",s:["빅 벤 & 국회의사당","대영박물관","타워 브리지"]},
+ {id:"edinburgh",e:"Edinburgh",n:"에든버러",c:"영국",lat:55.9533,lng:-3.1883,w:"에든버러",d:"고성과 축제의 스코틀랜드 수도.",s:["에든버러성","로열 마일","아서스 시트"]},
+ {id:"dublin",e:"Dublin",n:"더블린",c:"아일랜드",lat:53.3498,lng:-6.2603,w:"더블린",d:"기네스와 문학의 도시.",s:["기네스 스토어하우스","트리니티 칼리지","템플 바"]},
+ {id:"paris",e:"Paris",n:"파리",c:"프랑스",lat:48.8566,lng:2.3522,w:"파리 (프랑스)",d:"예술과 낭만, 모두의 로망.",s:["에펠탑","루브르 박물관","몽마르트르 언덕"]},
+ {id:"nice",e:"Nice",n:"니스",c:"프랑스",lat:43.7102,lng:7.262,w:"니스 (프랑스)",d:"코발트빛 지중해의 프렌치 리비에라.",s:["프롬나드 데장글레","니스 구시가","모나코(근교)"]},
+ {id:"rome",e:"Rome",n:"로마",c:"이탈리아",lat:41.9028,lng:12.4964,w:"로마",d:"도시 전체가 박물관인 영원의 도시.",s:["콜로세움","트레비 분수","바티칸 시국"]},
+ {id:"florence",e:"Florence",n:"피렌체",c:"이탈리아",lat:43.7696,lng:11.2558,w:"피렌체",d:"르네상스가 태어난 예술의 요람.",s:["두오모 대성당","우피치 미술관","베키오 다리"]},
+ {id:"venice",e:"Venice",n:"베네치아",c:"이탈리아",lat:45.4408,lng:12.3155,w:"베네치아",d:"물 위에 떠 있는 운하의 도시.",s:["산 마르코 광장","리알토 다리","곤돌라 투어"]},
+ {id:"milan",e:"Milan",n:"밀라노",c:"이탈리아",lat:45.4642,lng:9.19,w:"밀라노",d:"패션과 두오모, 북이탈리아의 심장.",s:["밀라노 두오모","갈레리아","최후의 만찬(산타 마리아 델레 그라치에)"]},
+ {id:"naples",e:"Naples",n:"나폴리",c:"이탈리아",lat:40.8518,lng:14.2681,w:"나폴리",d:"피자의 고향, 폼페이와 아말피의 관문.",s:["폼페이(근교)","스파카나폴리","아말피 해안(근교)"]},
+ {id:"barcelona",e:"Barcelona",n:"바르셀로나",c:"스페인",lat:41.3874,lng:2.1686,w:"바르셀로나",d:"가우디의 상상력이 살아있는 지중해 도시.",s:["사그라다 파밀리아","구엘 공원","람블라스 거리"]},
+ {id:"madrid",e:"Madrid",n:"마드리드",c:"스페인",lat:40.4168,lng:-3.7038,w:"마드리드",d:"태양과 하몽, 스페인의 심장.",s:["프라도 미술관","레티로 공원","마요르 광장"]},
+ {id:"seville",e:"Seville",n:"세비야",c:"스페인",lat:37.3891,lng:-5.9845,w:"세비야",d:"플라멩코와 오렌지 향의 안달루시아 수도.",s:["세비야 대성당","스페인 광장","알카사르"]},
+ {id:"granada",e:"Granada",n:"그라나다",c:"스페인",lat:37.1773,lng:-3.5986,w:"그라나다",d:"알람브라의 추억이 흐르는 도시.",s:["알람브라 궁전","알바이신 지구","타파스 골목"]},
+ {id:"lisbon",e:"Lisbon",n:"리스본",c:"포르투갈",lat:38.7223,lng:-9.1393,w:"리스본",d:"노란 트램이 언덕을 오르는 대서양의 도시.",s:["벨렝 탑","알파마 지구","제로니무스 수도원"]},
+ {id:"porto",e:"Porto",n:"포르투",c:"포르투갈",lat:41.1579,lng:-8.6291,w:"포르투",d:"포트와인과 아줄레주의 강변 도시.",s:["동 루이스 1세 다리","렐루 서점","히베이라 지구"]},
+ {id:"amsterdam",e:"Amsterdam",n:"암스테르담",c:"네덜란드",lat:52.3676,lng:4.9041,w:"암스테르담",d:"운하와 자전거, 자유로운 공기.",s:["반 고흐 미술관","안네 프랑크의 집","운하 크루즈"]},
+ {id:"brussels",e:"Brussels",n:"브뤼셀",c:"벨기에",lat:50.8503,lng:4.3517,w:"브뤼셀",d:"와플과 초콜릿, 유럽의 수도.",s:["그랑 플라스","오줌싸개 동상","아토미움"]},
+ {id:"bruges",e:"Bruges",n:"브뤼헤",c:"벨기에",lat:51.2093,lng:3.2247,w:"브뤼허",d:"중세가 그대로 멈춘 운하 마을.",s:["마르크트 광장","종탑(벨포트)","운하 보트 투어"]},
+ {id:"berlin",e:"Berlin",n:"베를린",c:"독일",lat:52.52,lng:13.405,w:"베를린",d:"역사와 예술이 뒤섞인 자유의 도시.",s:["브란덴부르크 문","베를린 장벽 이스트사이드 갤러리","박물관 섬"]},
+ {id:"munich",e:"Munich",n:"뮌헨",c:"독일",lat:48.1351,lng:11.582,w:"뮌헨",d:"맥주와 알프스 관문, 바이에른의 수도.",s:["마리엔 광장","님펜부르크 궁전","호프브로이하우스"]},
+ {id:"frankfurt",e:"Frankfurt",n:"프랑크푸르트",c:"독일",lat:50.1109,lng:8.6821,w:"프랑크푸르트암마인",d:"유럽 여행의 관문, 마인강의 금융 도시.",s:["뢰머 광장","마인 타워","작센하우젠"]},
+ {id:"prague",e:"Prague",n:"프라하",c:"체코",lat:50.0755,lng:14.4378,w:"프라하",d:"백탑의 도시, 동화 같은 야경.",s:["카를교","프라하성","구시가 광장 천문시계"]},
+ {id:"vienna",e:"Vienna",n:"빈",c:"오스트리아",lat:48.2082,lng:16.3738,w:"빈",d:"음악과 카페 문화의 수도.",s:["쇤브룬 궁전","슈테판 대성당","벨베데레 궁전"]},
+ {id:"salzburg",e:"Salzburg",n:"잘츠부르크",c:"오스트리아",lat:47.8095,lng:13.055,w:"잘츠부르크",d:"모차르트와 사운드 오브 뮤직의 도시.",s:["호엔잘츠부르크 요새","미라벨 정원","게트라이데 거리"]},
+ {id:"budapest",e:"Budapest",n:"부다페스트",c:"헝가리",lat:47.4979,lng:19.0402,w:"부다페스트",d:"다뉴브강 야경이 아름다운 온천 도시.",s:["국회의사당","세체니 온천","어부의 요새"]},
+ {id:"krakow",e:"Krakow",n:"크라쿠프",c:"폴란드",lat:50.0647,lng:19.945,w:"크라쿠프",d:"폴란드의 옛 수도, 중세 광장의 도시.",s:["중앙 광장(리네크)","바벨성","비엘리치카 소금광산(근교)"]},
+ {id:"zagreb",e:"Zagreb",n:"자그레브",c:"크로아티아",lat:45.815,lng:15.9819,w:"자그레브",d:"플리트비체로 가는 크로아티아의 수도.",s:["반 옐라치치 광장","성 마르코 성당","플리트비체 호수(근교)"]},
+ {id:"dubrovnik",e:"Dubrovnik",n:"두브로브니크",c:"크로아티아",lat:42.6507,lng:18.0944,w:"두브로브니크",d:"아드리아해의 진주, 성벽의 도시.",s:["구시가 성벽 걷기","스르지산 케이블카","반예 비치"]},
+ {id:"zurich",e:"Zurich",n:"취리히",c:"스위스",lat:47.3769,lng:8.5417,w:"취리히",d:"호수와 알프스로 가는 스위스의 관문.",s:["취리히 호수","반호프 거리","루체른(근교)"]},
+ {id:"interlaken",e:"Interlaken",n:"인터라켄",c:"스위스",lat:46.6863,lng:7.8632,w:"인터라켄",d:"융프라우로 가는 알프스 베이스캠프.",s:["융프라우요흐","하르더 쿨름","패러글라이딩"]},
+ {id:"athens",e:"Athens",n:"아테네",c:"그리스",lat:37.9838,lng:23.7275,w:"아테네",d:"서양 문명이 시작된 곳.",s:["아크로폴리스","파르테논 신전","플라카 지구"]},
+ {id:"santorini",e:"Santorini",n:"산토리니",c:"그리스",lat:36.3932,lng:25.4615,w:"산토리니섬",d:"파란 지붕과 하얀 벽, 에게해의 보석.",s:["이아 마을 석양","피라 마을","레드 비치"]},
+ {id:"valletta",e:"Malta Valletta",n:"몰타(발레타)",c:"몰타",lat:35.8989,lng:14.5146,w:"발레타",d:"지중해 한가운데 기사단의 요새 도시.",s:["성 요한 대성당","어퍼 바라카 가든","블루 그로토"]},
+ {id:"helsinki",e:"Helsinki",n:"헬싱키",c:"핀란드",lat:60.1699,lng:24.9384,w:"헬싱키",d:"디자인과 사우나의 북유럽 수도.",s:["헬싱키 대성당","수오멘린나 요새","템펠리아우키오 교회"]},
+ {id:"stockholm",e:"Stockholm",n:"스톡홀름",c:"스웨덴",lat:59.3293,lng:18.0686,w:"스톡홀름",d:"14개의 섬으로 이루어진 북유럽의 베네치아.",s:["감라스탄 구시가","바사 박물관","시청사"]},
+ {id:"copenhagen",e:"Copenhagen",n:"코펜하겐",c:"덴마크",lat:55.6761,lng:12.5683,w:"코펜하겐",d:"휘게의 본고장, 자전거의 도시.",s:["뉘하운","인어공주 동상","티볼리 공원"]},
+ {id:"oslo",e:"Oslo",n:"오슬로",c:"노르웨이",lat:59.9139,lng:10.7522,w:"오슬로",d:"피오르로 가는 노르웨이의 수도.",s:["오페라 하우스","비겔란 조각공원","뭉크 미술관"]},
+ {id:"reykjavik",e:"Reykjavik",n:"레이캬비크",c:"아이슬란드",lat:64.1466,lng:-21.9426,w:"레이캬비크",d:"오로라와 온천, 불과 얼음의 나라.",s:["할그림스키르캬 교회","블루 라군","골든 서클 투어"]},
+ {id:"tallinn",e:"Tallinn",n:"탈린",c:"에스토니아",lat:59.437,lng:24.7536,w:"탈린",d:"중세 성벽이 완벽히 남은 발트해의 보석.",s:["구시가(올드타운)","알렉산더 네프스키 대성당","톰페아 전망대"]},
  // ── 북미 ──
- {id:"newyork",n:"뉴욕",c:"미국",lat:40.7128,lng:-74.006,w:"뉴욕",d:"잠들지 않는 세계의 수도.",s:["타임스 스퀘어","센트럴 파크","자유의 여신상"]},
- {id:"la",n:"로스앤젤레스",c:"미국",lat:34.0522,lng:-118.2437,w:"로스앤젤레스",d:"할리우드와 해변, 천사의 도시.",s:["할리우드 사인","산타모니카 비치","그리피스 천문대"]},
- {id:"sf",n:"샌프란시스코",c:"미국",lat:37.7749,lng:-122.4194,w:"샌프란시스코",d:"안개와 언덕, 금문교의 도시.",s:["금문교","피어 39","알카트라즈 섬"]},
- {id:"lasvegas",n:"라스베이거스",c:"미국",lat:36.1699,lng:-115.1398,w:"라스베이거스",d:"사막 위의 불야성.",s:["스트립 거리","벨라지오 분수쇼","그랜드캐니언(근교)"]},
- {id:"chicago",n:"시카고",c:"미국",lat:41.8781,lng:-87.6298,w:"시카고",d:"건축과 재즈, 바람의 도시.",s:["밀레니엄 파크(더 빈)","윌리스 타워","네이비 피어"]},
- {id:"washington",n:"워싱턴 D.C.",c:"미국",lat:38.9072,lng:-77.0369,w:"워싱턴 D.C.",d:"박물관이 무료인 미국의 수도.",s:["스미소니언 박물관","링컨 기념관","백악관"]},
- {id:"boston",n:"보스턴",c:"미국",lat:42.3601,lng:-71.0589,w:"보스턴",d:"미국 역사와 대학의 도시.",s:["프리덤 트레일","하버드 대학교","퀸시 마켓"]},
- {id:"seattle",n:"시애틀",c:"미국",lat:47.6062,lng:-122.3321,w:"시애틀",d:"커피와 비, 에메랄드 시티.",s:["스페이스 니들","파이크 플레이스 마켓","치훌리 가든"]},
- {id:"miami",n:"마이애미",c:"미국",lat:25.7617,lng:-80.1918,w:"마이애미",d:"라틴의 열기가 흐르는 해변 도시.",s:["사우스 비치","리틀 아바나","윈우드 월스"]},
- {id:"orlando",n:"올랜도",c:"미국",lat:28.5384,lng:-81.3789,w:"올랜도",d:"테마파크의 수도.",s:["월트 디즈니 월드","유니버설 올랜도","케네디 우주센터(근교)"]},
- {id:"honolulu",n:"호놀룰루",c:"미국(하와이)",lat:21.3069,lng:-157.8583,w:"호놀룰루",d:"알로하의 낙원, 태평양의 휴양지.",s:["와이키키 비치","다이아몬드 헤드","진주만"]},
- {id:"vancouver",n:"밴쿠버",c:"캐나다",lat:49.2827,lng:-123.1207,w:"밴쿠버",d:"바다와 숲이 도시를 감싸는 곳.",s:["스탠리 파크","그랜빌 아일랜드","캐필라노 서스펜션 브리지"]},
- {id:"toronto",n:"토론토",c:"캐나다",lat:43.6532,lng:-79.3832,w:"토론토",d:"다양성의 도시, 캐나다 최대 도시.",s:["CN 타워","나이아가라 폭포(근교)","디스틸러리 디스트릭트"]},
- {id:"montreal",n:"몬트리올",c:"캐나다",lat:45.5019,lng:-73.5674,w:"몬트리올",d:"북미 속의 프랑스, 축제의 도시.",s:["노트르담 대성당","올드 몬트리올","몽로얄 전망대"]},
+ {id:"newyork",e:"New York",n:"뉴욕",c:"미국",lat:40.7128,lng:-74.006,w:"뉴욕",d:"잠들지 않는 세계의 수도.",s:["타임스 스퀘어","센트럴 파크","자유의 여신상"]},
+ {id:"la",e:"Los Angeles LA",n:"로스앤젤레스",c:"미국",lat:34.0522,lng:-118.2437,w:"로스앤젤레스",d:"할리우드와 해변, 천사의 도시.",s:["할리우드 사인","산타모니카 비치","그리피스 천문대"]},
+ {id:"sf",e:"San Francisco SF",n:"샌프란시스코",c:"미국",lat:37.7749,lng:-122.4194,w:"샌프란시스코",d:"안개와 언덕, 금문교의 도시.",s:["금문교","피어 39","알카트라즈 섬"]},
+ {id:"lasvegas",e:"Las Vegas",n:"라스베이거스",c:"미국",lat:36.1699,lng:-115.1398,w:"라스베이거스",d:"사막 위의 불야성.",s:["스트립 거리","벨라지오 분수쇼","그랜드캐니언(근교)"]},
+ {id:"chicago",e:"Chicago",n:"시카고",c:"미국",lat:41.8781,lng:-87.6298,w:"시카고",d:"건축과 재즈, 바람의 도시.",s:["밀레니엄 파크(더 빈)","윌리스 타워","네이비 피어"]},
+ {id:"washington",e:"Washington DC",n:"워싱턴 D.C.",c:"미국",lat:38.9072,lng:-77.0369,w:"워싱턴 D.C.",d:"박물관이 무료인 미국의 수도.",s:["스미소니언 박물관","링컨 기념관","백악관"]},
+ {id:"boston",e:"Boston",n:"보스턴",c:"미국",lat:42.3601,lng:-71.0589,w:"보스턴",d:"미국 역사와 대학의 도시.",s:["프리덤 트레일","하버드 대학교","퀸시 마켓"]},
+ {id:"seattle",e:"Seattle",n:"시애틀",c:"미국",lat:47.6062,lng:-122.3321,w:"시애틀",d:"커피와 비, 에메랄드 시티.",s:["스페이스 니들","파이크 플레이스 마켓","치훌리 가든"]},
+ {id:"miami",e:"Miami",n:"마이애미",c:"미국",lat:25.7617,lng:-80.1918,w:"마이애미",d:"라틴의 열기가 흐르는 해변 도시.",s:["사우스 비치","리틀 아바나","윈우드 월스"]},
+ {id:"orlando",e:"Orlando",n:"올랜도",c:"미국",lat:28.5384,lng:-81.3789,w:"올랜도",d:"테마파크의 수도.",s:["월트 디즈니 월드","유니버설 올랜도","케네디 우주센터(근교)"]},
+ {id:"honolulu",e:"Honolulu Hawaii",n:"호놀룰루",c:"미국(하와이)",lat:21.3069,lng:-157.8583,w:"호놀룰루",d:"알로하의 낙원, 태평양의 휴양지.",s:["와이키키 비치","다이아몬드 헤드","진주만"]},
+ {id:"vancouver",e:"Vancouver",n:"밴쿠버",c:"캐나다",lat:49.2827,lng:-123.1207,w:"밴쿠버",d:"바다와 숲이 도시를 감싸는 곳.",s:["스탠리 파크","그랜빌 아일랜드","캐필라노 서스펜션 브리지"]},
+ {id:"toronto",e:"Toronto",n:"토론토",c:"캐나다",lat:43.6532,lng:-79.3832,w:"토론토",d:"다양성의 도시, 캐나다 최대 도시.",s:["CN 타워","나이아가라 폭포(근교)","디스틸러리 디스트릭트"]},
+ {id:"montreal",e:"Montreal",n:"몬트리올",c:"캐나다",lat:45.5019,lng:-73.5674,w:"몬트리올",d:"북미 속의 프랑스, 축제의 도시.",s:["노트르담 대성당","올드 몬트리올","몽로얄 전망대"]},
  // ── 중남미 ──
- {id:"cancun",n:"칸쿤",c:"멕시코",lat:21.1619,lng:-86.8515,w:"칸쿤",d:"카리브해의 올인클루시브 휴양지.",s:["치첸이트사(근교)","세노테 다이빙","이슬라 무헤레스"]},
- {id:"mexicocity",n:"멕시코시티",c:"멕시코",lat:19.4326,lng:-99.1332,w:"멕시코시티",d:"아즈텍 위에 세워진 거대 수도.",s:["소칼로 광장","테오티우아칸(근교)","프리다 칼로 박물관"]},
- {id:"havana",n:"아바나",c:"쿠바",lat:23.1136,lng:-82.3666,w:"아바나",d:"올드카와 살사가 흐르는 시간이 멈춘 도시.",s:["올드 아바나","말레콘 해안도로","클래식카 투어"]},
- {id:"lima",n:"리마",c:"페루",lat:-12.0464,lng:-77.0428,w:"리마",d:"미식의 수도, 페루 여행의 시작점.",s:["미라플로레스","아르마스 광장","라르코 박물관"]},
- {id:"cusco",n:"쿠스코",c:"페루",lat:-13.5319,lng:-71.9675,w:"쿠스코",d:"마추픽추로 가는 잉카 제국의 수도.",s:["마추픽추","아르마스 광장","무지개산"]},
- {id:"rio",n:"리우데자네이루",c:"브라질",lat:-22.9068,lng:-43.1729,w:"리우데자네이루",d:"삼바와 해변, 경이로운 도시.",s:["예수상(코르코바두)","코파카바나 해변","슈가로프 산"]},
- {id:"buenosaires",n:"부에노스아이레스",c:"아르헨티나",lat:-34.6037,lng:-58.3816,w:"부에노스아이레스",d:"탱고가 흐르는 남미의 파리.",s:["라 보카 카미니토","레콜레타 묘지","오벨리스크"]},
+ {id:"cancun",e:"Cancun",n:"칸쿤",c:"멕시코",lat:21.1619,lng:-86.8515,w:"칸쿤",d:"카리브해의 올인클루시브 휴양지.",s:["치첸이트사(근교)","세노테 다이빙","이슬라 무헤레스"]},
+ {id:"mexicocity",e:"Mexico City",n:"멕시코시티",c:"멕시코",lat:19.4326,lng:-99.1332,w:"멕시코시티",d:"아즈텍 위에 세워진 거대 수도.",s:["소칼로 광장","테오티우아칸(근교)","프리다 칼로 박물관"]},
+ {id:"havana",e:"Havana",n:"아바나",c:"쿠바",lat:23.1136,lng:-82.3666,w:"아바나",d:"올드카와 살사가 흐르는 시간이 멈춘 도시.",s:["올드 아바나","말레콘 해안도로","클래식카 투어"]},
+ {id:"lima",e:"Lima",n:"리마",c:"페루",lat:-12.0464,lng:-77.0428,w:"리마",d:"미식의 수도, 페루 여행의 시작점.",s:["미라플로레스","아르마스 광장","라르코 박물관"]},
+ {id:"cusco",e:"Cusco",n:"쿠스코",c:"페루",lat:-13.5319,lng:-71.9675,w:"쿠스코",d:"마추픽추로 가는 잉카 제국의 수도.",s:["마추픽추","아르마스 광장","무지개산"]},
+ {id:"rio",e:"Rio de Janeiro",n:"리우데자네이루",c:"브라질",lat:-22.9068,lng:-43.1729,w:"리우데자네이루",d:"삼바와 해변, 경이로운 도시.",s:["예수상(코르코바두)","코파카바나 해변","슈가로프 산"]},
+ {id:"buenosaires",e:"Buenos Aires",n:"부에노스아이레스",c:"아르헨티나",lat:-34.6037,lng:-58.3816,w:"부에노스아이레스",d:"탱고가 흐르는 남미의 파리.",s:["라 보카 카미니토","레콜레타 묘지","오벨리스크"]},
  // ── 오세아니아 ──
- {id:"sydney",n:"시드니",c:"호주",lat:-33.8688,lng:151.2093,w:"시드니",d:"오페라하우스와 항구의 도시.",s:["시드니 오페라하우스","하버 브리지","본다이 비치"]},
- {id:"melbourne",n:"멜버른",c:"호주",lat:-37.8136,lng:144.9631,w:"멜버른",d:"커피와 골목 예술의 문화 수도.",s:["그레이트 오션 로드(근교)","호시어 레인","퀸 빅토리아 마켓"]},
- {id:"brisbane",n:"브리즈번",c:"호주",lat:-27.4698,lng:153.0251,w:"브리즈번",d:"골드코스트로 가는 강변의 도시.",s:["사우스 뱅크","론파인 코알라 보호구역","골드코스트(근교)"]},
- {id:"auckland",n:"오클랜드",c:"뉴질랜드",lat:-36.8509,lng:174.7645,w:"오클랜드 (뉴질랜드)",d:"돛의 도시, 뉴질랜드 여행의 시작점.",s:["스카이 타워","와이헤케 섬","호비튼(근교)"]},
- {id:"queenstown",n:"퀸스타운",c:"뉴질랜드",lat:-45.0312,lng:168.6626,w:"퀸스타운 (뉴질랜드)",d:"번지점프가 태어난 모험의 수도.",s:["밀포드 사운드(근교)","번지점프","스카이라인 곤돌라"]},
- {id:"guam",n:"괌",c:"미국령 괌",lat:13.4443,lng:144.7937,w:"괌",d:"가까운 남태평양, 가족 여행의 정석.",s:["투몬 비치","사랑의 절벽","차모로 야시장"]},
- {id:"saipan",n:"사이판",c:"북마리아나 제도",lat:15.1894,lng:145.7275,w:"사이판",d:"마나가하섬이 빛나는 휴양 섬.",s:["마나가하섬","만세절벽","마이크로 비치"]},
+ {id:"sydney",e:"Sydney",n:"시드니",c:"호주",lat:-33.8688,lng:151.2093,w:"시드니",d:"오페라하우스와 항구의 도시.",s:["시드니 오페라하우스","하버 브리지","본다이 비치"]},
+ {id:"melbourne",e:"Melbourne",n:"멜버른",c:"호주",lat:-37.8136,lng:144.9631,w:"멜버른",d:"커피와 골목 예술의 문화 수도.",s:["그레이트 오션 로드(근교)","호시어 레인","퀸 빅토리아 마켓"]},
+ {id:"brisbane",e:"Brisbane",n:"브리즈번",c:"호주",lat:-27.4698,lng:153.0251,w:"브리즈번",d:"골드코스트로 가는 강변의 도시.",s:["사우스 뱅크","론파인 코알라 보호구역","골드코스트(근교)"]},
+ {id:"auckland",e:"Auckland",n:"오클랜드",c:"뉴질랜드",lat:-36.8509,lng:174.7645,w:"오클랜드 (뉴질랜드)",d:"돛의 도시, 뉴질랜드 여행의 시작점.",s:["스카이 타워","와이헤케 섬","호비튼(근교)"]},
+ {id:"queenstown",e:"Queenstown",n:"퀸스타운",c:"뉴질랜드",lat:-45.0312,lng:168.6626,w:"퀸스타운 (뉴질랜드)",d:"번지점프가 태어난 모험의 수도.",s:["밀포드 사운드(근교)","번지점프","스카이라인 곤돌라"]},
+ {id:"guam",e:"Guam",n:"괌",c:"미국령 괌",lat:13.4443,lng:144.7937,w:"괌",d:"가까운 남태평양, 가족 여행의 정석.",s:["투몬 비치","사랑의 절벽","차모로 야시장"]},
+ {id:"saipan",e:"Saipan",n:"사이판",c:"북마리아나 제도",lat:15.1894,lng:145.7275,w:"사이판",d:"마나가하섬이 빛나는 휴양 섬.",s:["마나가하섬","만세절벽","마이크로 비치"]},
  // ── 아프리카 ──
- {id:"cairo",n:"카이로",c:"이집트",lat:30.0444,lng:31.2357,w:"카이로",d:"피라미드를 품은 나일강의 대도시.",s:["기자 피라미드","이집트 박물관","칸 엘 칼릴리 시장"]},
- {id:"capetown",n:"케이프타운",c:"남아프리카공화국",lat:-33.9249,lng:18.4241,w:"케이프타운",d:"테이블마운틴 아래 두 대양이 만나는 곳.",s:["테이블 마운틴","희망봉","보캅 마을"]},
- {id:"marrakech",n:"마라케시",c:"모로코",lat:31.6295,lng:-7.9811,w:"마라케시",d:"붉은 도시, 사하라로 가는 관문.",s:["제마 엘프나 광장","마조렐 정원","메디나 수크"]},
+ {id:"cairo",e:"Cairo",n:"카이로",c:"이집트",lat:30.0444,lng:31.2357,w:"카이로",d:"피라미드를 품은 나일강의 대도시.",s:["기자 피라미드","이집트 박물관","칸 엘 칼릴리 시장"]},
+ {id:"capetown",e:"Cape Town",n:"케이프타운",c:"남아프리카공화국",lat:-33.9249,lng:18.4241,w:"케이프타운",d:"테이블마운틴 아래 두 대양이 만나는 곳.",s:["테이블 마운틴","희망봉","보캅 마을"]},
+ {id:"marrakech",e:"Marrakech",n:"마라케시",c:"모로코",lat:31.6295,lng:-7.9811,w:"마라케시",d:"붉은 도시, 사하라로 가는 관문.",s:["제마 엘프나 광장","마조렐 정원","메디나 수크"]},
 ];
 const CITY_MAP = Object.fromEntries(CITIES.map(c=>[c.id,c]));
 
@@ -528,30 +612,42 @@ const CITY_MAP = Object.fromEntries(CITIES.map(c=>[c.id,c]));
    3) 상태
 ══════════════════════════════════════════════════════════════ */
 let fb = null;
-let currentUser = null;     // {uid, name}
+let currentUser = null;     // {uid, email}
+let usersMap = {};          // uid -> nickname
 let allVisits = [];         // [{id, uid, name, cityId, date|null, review, ts}]
 let currentMonth = null;    // null=전체, 1~12
-let visitCounts = {};       // (필터 적용) cityId -> count
-let myCityIds = new Set();  // (필터 적용) 내가 간 도시
-let unsubVisits = null;
-let dataLoaded = false;
+let myMode = false;         // 내 여행 모드
+let visitCounts = {};       // (필터 적용) cityId -> 전체 count
+let myCounts = {};          // (필터 적용) cityId -> 내 count
+let unsubVisits = null, unsubUsers = null;
+let dataLoaded = false, usersLoaded = false;
+let nickPrompted = false;
 
-// 데모 모드 샘플 (config 미설정 시에만 사용)
+// 이름 유틸
+function nameOf(uid, fallback){
+  return usersMap[uid] || fallback || "여행자";
+}
+function mask(name){
+  return name.length >= 4 ? name.slice(0,3)+"*****" : name.slice(0,1)+"***";
+}
+
+// 데모 모드 샘플
 function makeDemoVisits(){
   const seed = {tokyo:41,osaka:38,paris:29,bangkok:27,danang:24,london:22,taipei:21,newyork:19,
     rome:17,barcelona:16,singapore:15,fukuoka:15,prague:13,cebu:12,hongkong:12,seoul:11,bali:11,
     sapporo:10,sydney:9,honolulu:9,budapest:8,istanbul:7,interlaken:7,santorini:6,dubai:6,
     okinawa:6,la:5,lisbon:5,guam:5,venice:4,cusco:3,rio:3,cairo:2,marrakech:2,helsinki:2};
-  const out = []; let i=0;
-  // 계절감 있는 데모: 삿포로/헬싱키는 겨울, 산토리니/발리는 여름 위주 등 도시별 성수기 부여
   const peak = {sapporo:[12,1,2],helsinki:[12,1,2],santorini:[6,7,8,9],bali:[7,8],okinawa:[7,8],
     kyoto:[4,11],paris:[5,6,9],danang:[5,6,7],guam:[1,7,8],honolulu:[7,12],interlaken:[6,7,8]};
+  const out = []; let i=0;
   for(const [cityId,count] of Object.entries(seed)){
     for(let k=0;k<count;k++){
       const months = peak[cityId] || [1,2,3,4,5,6,7,8,9,10,11,12];
       const m = months[(i*7+k*3)%months.length];
       const day = 1 + ((i*11+k*5)%28);
-      out.push({id:"demo"+(i++)+"-"+k, uid:"demo-u"+((i+k)%20), name:"여행자"+((i+k)%20+1),
+      const uid = "demo-u"+((i+k)%20);
+      usersMap[uid] = "여행자"+((i+k)%20+1);
+      out.push({id:"d"+(i++)+"-"+k, uid, name:usersMap[uid],
         cityId, date:`2025-${String(m).padStart(2,"0")}-${String(day).padStart(2,"0")}`,
         review:"", ts:0});
     }
@@ -563,20 +659,34 @@ function makeDemoVisits(){
    4) 데이터 계층
 ══════════════════════════════════════════════════════════════ */
 async function initFirebase(){
-  const [{initializeApp},{getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut},
-         {getFirestore,collection,addDoc,deleteDoc,doc,onSnapshot,query,serverTimestamp}] = await Promise.all([
+  const [{initializeApp},
+         {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,
+          sendPasswordResetEmail,signOut},
+         {getFirestore,collection,addDoc,updateDoc,deleteDoc,doc,setDoc,onSnapshot,query,serverTimestamp}] = await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
   ]);
   const app = initializeApp(firebaseConfig);
   fb = {auth:getAuth(app), db:getFirestore(app),
-    onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,
-    collection,addDoc,deleteDoc,doc,onSnapshot,query,serverTimestamp};
+    onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,
+    sendPasswordResetEmail,signOut,
+    collection,addDoc,updateDoc,deleteDoc,doc,setDoc,onSnapshot,query,serverTimestamp};
+
   fb.onAuthStateChanged(fb.auth, u=>{
-    currentUser = u ? {uid:u.uid, name:displayNameOf(u)} : null;
-    renderUser(); recompute();
+    currentUser = u ? {uid:u.uid, email:u.email} : null;
+    if(!currentUser){ nickPrompted = false; if(myMode) setMyMode(false); }
+    renderUser(); recompute(); maybePromptNickname();
   });
+  unsubUsers = fb.onSnapshot(fb.collection(fb.db,"users"), snap=>{
+    usersMap = {};
+    snap.forEach(d=>{
+      const v = d.data();
+      if(typeof v.nickname==="string" && v.nickname) usersMap[d.id] = v.nickname;
+    });
+    usersLoaded = true;
+    renderUser(); recompute(); maybePromptNickname();
+  }, err=>console.error("users:",err));
   unsubVisits = fb.onSnapshot(fb.query(fb.collection(fb.db,"visits")), snap=>{
     allVisits = [];
     snap.forEach(d=>{
@@ -596,8 +706,23 @@ async function initFirebase(){
     toast("데이터를 불러오지 못했어요. Firestore 규칙을 확인해 주세요.");
   });
 }
-function displayNameOf(u){
-  return u.displayName || (u.email ? u.email.split("@")[0] : "여행자");
+function myNickname(){
+  if(!currentUser) return "여행자";
+  return usersMap[currentUser.uid] ||
+    (currentUser.email ? currentUser.email.split("@")[0] : "여행자");
+}
+function maybePromptNickname(){
+  if(DEMO || nickPrompted || !currentUser || !usersLoaded) return;
+  if(usersMap[currentUser.uid]) return;
+  nickPrompted = true;
+  openProfile(true);
+}
+async function saveNickname(nick){
+  if(DEMO){ usersMap[currentUser.uid] = nick; renderUser(); recompute(); return null; }
+  try{
+    await fb.setDoc(fb.doc(fb.db,"users",currentUser.uid), {nickname:nick});
+    return null;
+  }catch(e){ console.error(e); return "저장에 실패했어요. Firestore 규칙을 확인해 주세요."; }
 }
 
 function filteredVisits(){
@@ -606,31 +731,42 @@ function filteredVisits(){
 }
 function recompute(){
   const fv = filteredVisits();
-  visitCounts = {}; myCityIds = new Set();
+  visitCounts = {}; myCounts = {};
   fv.forEach(v=>{
     visitCounts[v.cityId] = (visitCounts[v.cityId]||0)+1;
-    if(currentUser && v.uid===currentUser.uid) myCityIds.add(v.cityId);
+    if(currentUser && v.uid===currentUser.uid)
+      myCounts[v.cityId] = (myCounts[v.cityId]||0)+1;
   });
   drawMarkers(); renderStats();
   if(openedCity) renderCityDynamic(openedCity);
 }
 
-async function saveVisit(cityId, date, review){
+async function saveVisit(cityId, date, review, editId){
   if(!currentUser) return "로그인이 필요해요.";
-  const dup = allVisits.some(v=>v.uid===currentUser.uid && v.cityId===cityId && v.date===date);
+  const dup = allVisits.some(v=>
+    v.uid===currentUser.uid && v.cityId===cityId && v.date===date && v.id!==editId);
   if(dup) return "같은 날짜의 기록이 이미 있어요. 다른 날짜의 여행이라면 날짜를 바꿔 주세요.";
   if(DEMO){
-    allVisits.push({id:"local-"+Date.now(), uid:currentUser.uid, name:currentUser.name,
-      cityId, date, review, ts:Date.now()/1000});
+    if(editId){
+      const v = allVisits.find(v=>v.id===editId);
+      if(v){ v.date=date; v.review=review; }
+    }else{
+      allVisits.push({id:"local-"+Date.now(), uid:currentUser.uid, name:myNickname(),
+        cityId, date, review, ts:Date.now()/1000});
+    }
     recompute(); return null;
   }
   try{
-    await fb.addDoc(fb.collection(fb.db,"visits"),{
-      uid:currentUser.uid, name:currentUser.name, cityId, date, review,
-      createdAt:fb.serverTimestamp()
-    });
+    if(editId){
+      await fb.updateDoc(fb.doc(fb.db,"visits",editId), {date, review});
+    }else{
+      await fb.addDoc(fb.collection(fb.db,"visits"),{
+        uid:currentUser.uid, name:myNickname(), cityId, date, review,
+        createdAt:fb.serverTimestamp()
+      });
+    }
     return null;
-  }catch(e){ console.error(e); return "저장에 실패했어요. 잠시 후 다시 시도해 주세요."; }
+  }catch(e){ console.error(e); return "저장에 실패했어요. Firestore 규칙을 확인해 주세요."; }
 }
 async function removeVisit(visitId){
   if(DEMO){
@@ -646,7 +782,12 @@ async function removeVisit(visitId){
 /* ══════════════════════════════════════════════════════════════
    5) 지도
 ══════════════════════════════════════════════════════════════ */
-const map = L.map("map",{zoomControl:false, worldCopyJump:true, minZoom:2}).setView([25,40],2.4);
+const map = L.map("map",{
+  zoomControl:false, worldCopyJump:true, minZoom:2,
+  maxBounds:[[-85,-3600],[85,3600]],   // 상하로 지도를 벗어나지 않도록 고정 (좌우는 사실상 무제한)
+  maxBoundsViscosity:1.0
+}).setView([25,40],2.4);
+map.attributionControl.addAttribution("Copyright © 2026 Shinhyunsu. All Rights Reserved.");
 L.control.zoom({position:"bottomright"}).addTo(map);
 L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",{
   attribution:'&copy; OpenStreetMap &copy; CARTO', subdomains:"abcd", maxZoom:19
@@ -660,18 +801,28 @@ function radiusFor(count){ return count ? 6 + Math.sqrt(count)*2.6 : 4; }
 function drawMarkers(){
   markerLayer.clearLayers();
   CITIES.forEach(city=>{
-    const count = visitCounts[city.id]||0;
-    const mine = myCityIds.has(city.id);
-    const m = L.circleMarker([city.lat,city.lng],{
-      radius: radiusFor(count),
-      color: mine ? "#59dcc9" : "#ffb65c",
-      weight: mine ? 2.5 : 1.5,
-      fillColor: "#ffb65c",
-      fillOpacity: count ? 0.55 : 0.15,
-      opacity: count ? 0.95 : 0.45,
-    });
-    m.bindTooltip(`${city.n} · ${count}회${mine?" · 나의 도시":""}`,
-      {direction:"top", className:"city-tip", offset:[0,-4]});
+    const total = visitCounts[city.id]||0;
+    const mine = myCounts[city.id]||0;
+    let opt, tip;
+    if(myMode){
+      if(mine){
+        opt = {radius:radiusFor(mine), color:"#59dcc9", weight:2.5,
+               fillColor:"#59dcc9", fillOpacity:.5, opacity:.95};
+        tip = `${city.n} · 나의 여행 ${mine}회`;
+      }else{
+        opt = {radius:3, color:"#f2ecdf", weight:1,
+               fillColor:"#f2ecdf", fillOpacity:.06, opacity:.18};
+        tip = `${city.n} · 아직 발자국이 없어요`;
+      }
+    }else{
+      opt = {radius:radiusFor(total),
+             color: mine ? "#59dcc9" : "#ffb65c", weight: mine ? 2.5 : 1.5,
+             fillColor:"#ffb65c", fillOpacity: total ? .55 : .15,
+             opacity: total ? .95 : .45};
+      tip = `${city.n} · ${total}회${mine?" · 나의 도시":""}`;
+    }
+    const m = L.circleMarker([city.lat,city.lng],opt);
+    m.bindTooltip(tip,{direction:"top", className:"city-tip", offset:[0,-4]});
     m.on("click",()=>openCity(city.id));
     m.addTo(markerLayer);
   });
@@ -684,20 +835,83 @@ const monthsEl = document.getElementById("months");
 monthsEl.innerHTML =
   `<button class="chip on" data-m="">전체</button>` +
   Array.from({length:12},(_,i)=>`<button class="chip" data-m="${i+1}">${i+1}월</button>`).join("");
+function setMonth(m){
+  currentMonth = m;
+  monthsEl.querySelectorAll(".chip").forEach(c=>
+    c.classList.toggle("on", (c.dataset.m ? +c.dataset.m : null)===m));
+  recompute();
+}
 monthsEl.addEventListener("click",e=>{
   const btn = e.target.closest(".chip"); if(!btn) return;
-  currentMonth = btn.dataset.m ? +btn.dataset.m : null;
-  monthsEl.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", c===btn));
-  recompute();
+  setMonth(btn.dataset.m ? +btn.dataset.m : null);
 });
 
 /* ══════════════════════════════════════════════════════════════
-   7) 도시 패널
+   7) 내 여행 모드
+══════════════════════════════════════════════════════════════ */
+const myModeBtn = document.getElementById("myModeBtn");
+function setMyMode(on){
+  myMode = on;
+  myModeBtn.classList.toggle("on", on);
+  myModeBtn.setAttribute("aria-pressed", String(on));
+  document.getElementById("statsBox").classList.toggle("mine", on);
+  recompute();
+}
+myModeBtn.onclick = ()=>{
+  if(!currentUser){ openAuth(); return; }
+  setMyMode(!myMode);
+  if(myMode) toast("내 발자국만 표시하고 있어요 🧭");
+};
+
+/* ══════════════════════════════════════════════════════════════
+   8) 여행 일지
+══════════════════════════════════════════════════════════════ */
+const journalOverlay = document.getElementById("journalOverlay");
+function openJournal(){
+  if(!currentUser){ openAuth(); return; }
+  const mine = allVisits.filter(v=>v.uid===currentUser.uid)
+    .sort((a,b)=>{
+      if(a.date && b.date) return b.date.localeCompare(a.date);
+      if(a.date) return -1; if(b.date) return 1;
+      return b.ts-a.ts;
+    });
+  const countries = new Set(mine.map(v=>CITY_MAP[v.cityId].c));
+  document.getElementById("journalSub").textContent = mine.length
+    ? `${mine.length}번의 여행 · ${new Set(mine.map(v=>v.cityId)).size}개 도시 · ${countries.size}개 국가`
+    : "";
+  const list = document.getElementById("journalList");
+  if(!mine.length){
+    list.innerHTML = `<li class="emptynote">아직 기록이 없어요. 지도의 도시를 눌러 첫 발자국을 남겨보세요!</li>`;
+  }else{
+    let html="", lastYear=null;
+    mine.forEach(v=>{
+      const y = v.date ? v.date.slice(0,4) : "날짜 미상";
+      if(y!==lastYear){ html += `<li class="year">${y}</li>`; lastYear=y; }
+      const city = CITY_MAP[v.cityId];
+      html += `<li><button class="trip" data-id="${v.cityId}">
+        <span class="d">${v.date ? v.date.slice(5).replace("-",".") : "–"}</span>
+        <span class="city">${esc(city.n)}</span><span class="co">${esc(city.c)}</span>
+        <span class="rv">${esc(v.review)}</span></button></li>`;
+    });
+    list.innerHTML = html;
+  }
+  journalOverlay.classList.add("open");
+}
+function closeJournal(){ journalOverlay.classList.remove("open"); }
+document.getElementById("journalBtn").onclick = openJournal;
+document.getElementById("journalClose").onclick = closeJournal;
+document.getElementById("journalList").addEventListener("click",e=>{
+  const btn = e.target.closest(".trip"); if(!btn) return;
+  closeJournal(); openCity(btn.dataset.id);
+});
+
+/* ══════════════════════════════════════════════════════════════
+   9) 도시 패널
 ══════════════════════════════════════════════════════════════ */
 const panel = document.getElementById("panel");
 let openedCity = null;
 const wikiCache = {};
-const esc = s=>s.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const esc = s=>String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtDate = d=> d ? `${+d.slice(0,4)}.${+d.slice(5,7)}.${+d.slice(8,10)}` : "날짜 미상";
 
 async function openCity(id){
@@ -708,7 +922,6 @@ async function openCity(id){
   document.getElementById("panelDesc").textContent = city.d;
   document.getElementById("panelSpots").innerHTML = city.s.map(s=>`<li>${esc(s)}</li>`).join("");
   renderCityDynamic(id);
-  // 사진
   const photoBox = document.getElementById("panelPhoto");
   const noimg = document.getElementById("panelNoimg");
   const note = document.getElementById("wikiNote");
@@ -724,7 +937,9 @@ async function openCity(id){
     if(openedCity!==id) return;
     if(w.thumbnail?.source){
       const img = document.createElement("img");
-      img.src = w.originalimage?.source || w.thumbnail.source;
+      // 원본(수 MB일 수 있음) 대신 800px 썸네일로 로딩 속도 개선
+      img.src = w.thumbnail.source.replace(/\/\d+px-/, "/800px-");
+      img.onerror = ()=>{ img.onerror=null; img.src = w.thumbnail.source; };
       img.alt = `${city.n} 대표 사진`;
       photoBox.prepend(img); noimg.style.display="none";
       note.textContent = "사진·설명 출처: 한국어 위키백과";
@@ -733,36 +948,38 @@ async function openCity(id){
   }catch(e){ /* 사진 없이 진행 */ }
 }
 
-// 필터/데이터 변경 시 갱신되는 동적 부분 (카운트, 내 기록, 리뷰)
 function renderCityDynamic(id){
   const count = visitCounts[id]||0;
   document.getElementById("panelCount").textContent = count;
   document.getElementById("panelCountLabel").textContent =
     currentMonth ? `번의 ${currentMonth}월 여행이 이곳에 닿았어요` : "번의 여행이 이곳에 닿았어요";
 
-  // 나의 발자국 (필터 무관, 전체 표시)
+  renderMonthChart(id);
+
+  // 나의 발자국 (필터 무관, 전체)
   const mineSec = document.getElementById("myTripsSection");
   const mineUl = document.getElementById("myTrips");
   const mine = currentUser
     ? allVisits.filter(v=>v.uid===currentUser.uid && v.cityId===id)
-        .sort((a,b)=>(b.date||"")>(a.date||"")?1:-1)
+        .sort((a,b)=>(b.date||"").localeCompare(a.date||""))
     : [];
   if(mine.length){
     mineSec.style.display = "";
     mineUl.innerHTML = mine.map(v=>
-      `<li><span class="d">${fmtDate(v.date)}</span><span class="r">${esc(v.review)||""}</span>
-       <button class="del" data-id="${v.id}" aria-label="이 기록 삭제">삭제</button></li>`).join("");
+      `<li><span class="d">${fmtDate(v.date)}</span><span class="r">${esc(v.review)}</span>
+       <button class="act" data-edit="${v.id}">수정</button>
+       <button class="act danger" data-del="${v.id}" aria-label="이 기록 삭제">삭제</button></li>`).join("");
   }else{ mineSec.style.display = "none"; mineUl.innerHTML=""; }
 
-  // 여행자의 한 줄 (월 필터 적용 → "그 달의 후기"를 보게 됨)
+  // 여행자의 한 줄 (월 필터 적용, 이름은 마스킹)
   const revUl = document.getElementById("panelReviews");
   const revs = filteredVisits()
     .filter(v=>v.cityId===id && v.review.trim())
-    .sort((a,b)=>(b.date||"")>(a.date||"")?1:(b.ts-a.ts))
+    .sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.ts-a.ts))
     .slice(0,6);
   if(revs.length){
     revUl.innerHTML = revs.map(v=>
-      `<li><div class="meta"><b>${esc(v.name)}</b> · ${fmtDate(v.date)}</div>
+      `<li><div class="meta"><b>${esc(mask(nameOf(v.uid, v.name)))}</b> · ${fmtDate(v.date)}</div>
        <div class="txt">${esc(v.review)}</div></li>`).join("");
   }else{
     revUl.innerHTML = `<li class="emptynote">${
@@ -770,16 +987,52 @@ function renderCityDynamic(id){
                    : "아직 후기가 없어요. 첫 후기를 남겨보세요!"}</li>`;
   }
 }
+
+// 여행하기 좋은 시기: 이 도시의 (전체 기간) 월별 방문 분포
+function renderMonthChart(id){
+  const wrap = document.getElementById("chartWrap");
+  const byMonth = Array(12).fill(0);
+  let total = 0;
+  allVisits.forEach(v=>{
+    if(v.cityId===id && v.date){ byMonth[+v.date.slice(5,7)-1]++; total++; }
+  });
+  if(total < 2){
+    wrap.innerHTML = `<div class="emptynote">아직 시기를 알려줄 기록이 부족해요. 발자국이 쌓이면 월별 그래프가 나타나요.</div>`;
+    return;
+  }
+  const max = Math.max(...byMonth);
+  const bestMonths = byMonth.map((v,i)=>v===max?i+1:null).filter(Boolean);
+  wrap.innerHTML =
+    `<div class="bars" role="img" aria-label="월별 방문 분포">` +
+    byMonth.map((v,i)=>{
+      const h = v ? Math.max(8, Math.round(v/max*100)) : 4;
+      const cls = ["bar", v===max?"best":"", currentMonth===i+1?"sel":""].join(" ").trim();
+      return `<button class="${cls}" style="height:${h}%" data-m="${i+1}"
+        title="${i+1}월 · ${v}회" aria-label="${i+1}월 ${v}회"></button>`;
+    }).join("") +
+    `</div><div class="bar-labels">` +
+    Array.from({length:12},(_,i)=>`<span>${i+1}</span>`).join("") +
+    `</div><div class="chart-note">여행자들은 <b>${bestMonths.join("·")}월</b>에 이곳을 가장 많이 찾았어요. (총 ${total}회 기준 · 막대를 누르면 그 달만 볼 수 있어요)</div>`;
+}
+document.getElementById("chartWrap").addEventListener("click",e=>{
+  const bar = e.target.closest(".bar"); if(!bar) return;
+  const m = +bar.dataset.m;
+  setMonth(currentMonth===m ? null : m);
+});
+
 document.getElementById("myTrips").addEventListener("click",e=>{
-  const btn = e.target.closest(".del"); if(!btn) return;
-  if(confirm("이 방문 기록을 삭제할까요?")) removeVisit(btn.dataset.id);
+  const del = e.target.closest("[data-del]");
+  if(del){ if(confirm("이 방문 기록을 삭제할까요?")) removeVisit(del.dataset.del); return; }
+  const edit = e.target.closest("[data-edit]");
+  if(edit){
+    const v = allVisits.find(x=>x.id===edit.dataset.edit);
+    if(v) openVisitModal(v);
+  }
 });
 document.getElementById("panelClose").onclick = ()=>panel.classList.remove("open");
 
 /* ══════════════════════════════════════════════════════════════
-   8) 모달 공통 (드래그로 닫히는 문제 방지)
-   input에서 드래그를 시작해 배경에서 놓으면 click 대상이 overlay가
-   되어 닫히던 버그 → mousedown이 overlay 자체에서 시작한 경우에만 닫기
+   10) 모달 공통 (드래그로 닫히는 문제 방지)
 ══════════════════════════════════════════════════════════════ */
 function setupOverlay(overlay, closeFn){
   let downOnSelf = false;
@@ -789,30 +1042,37 @@ function setupOverlay(overlay, closeFn){
     downOnSelf = false;
   });
 }
+setupOverlay(journalOverlay, closeJournal);
 
 /* ══════════════════════════════════════════════════════════════
-   9) 방문 기록 모달
+   11) 방문 기록 모달 (신규/수정)
 ══════════════════════════════════════════════════════════════ */
 const visitOverlay = document.getElementById("visitOverlay");
 const visitDate = document.getElementById("visitDate");
 const visitReview = document.getElementById("visitReview");
-function openVisitModal(){
+let editingVisit = null; // 수정 중이면 visit 객체
+function openVisitModal(editVisit){
   if(!openedCity) return;
   if(!currentUser){ openAuth(); return; }
+  editingVisit = editVisit || null;
   const city = CITY_MAP[openedCity];
-  document.getElementById("visitTitle").textContent = `${city.n} 발자국 남기기`;
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById("visitTitle").textContent =
+    editingVisit ? `${city.n} 기록 수정` : `${city.n} 발자국 남기기`;
   document.getElementById("visitSub").textContent =
-    "같은 도시라도 다른 날짜면 여러 번 기록할 수 있어요.";
-  const today = new Date();
-  visitDate.value = today.toISOString().slice(0,10);
-  visitDate.max = today.toISOString().slice(0,10);
-  visitReview.value = ""; document.getElementById("reviewLen").textContent = "0";
+    editingVisit ? "날짜와 후기를 고칠 수 있어요."
+                 : "같은 도시라도 다른 날짜면 여러 번 기록할 수 있어요.";
+  document.getElementById("visitSave").textContent = editingVisit ? "수정하기" : "기록하기";
+  visitDate.value = editingVisit?.date || today;
+  visitDate.max = today;
+  visitReview.value = editingVisit?.review || "";
+  document.getElementById("reviewLen").textContent = visitReview.value.length;
   document.getElementById("visitErr").textContent = "";
   visitOverlay.classList.add("open");
   visitDate.focus();
 }
-function closeVisitModal(){ visitOverlay.classList.remove("open"); }
-document.getElementById("visitBtn").onclick = openVisitModal;
+function closeVisitModal(){ visitOverlay.classList.remove("open"); editingVisit=null; }
+document.getElementById("visitBtn").onclick = ()=>openVisitModal();
 document.getElementById("visitCancel").onclick = closeVisitModal;
 setupOverlay(visitOverlay, closeVisitModal);
 visitReview.addEventListener("input",()=>{
@@ -824,23 +1084,37 @@ document.getElementById("visitSave").onclick = async ()=>{
   if(!date){ err.textContent = "방문 날짜를 선택해 주세요."; return; }
   if(date > new Date().toISOString().slice(0,10)){ err.textContent = "미래 날짜는 기록할 수 없어요."; return; }
   const btn = document.getElementById("visitSave");
-  btn.disabled = true; btn.textContent = "기록 중…";
-  const fail = await saveVisit(openedCity, date, visitReview.value.trim());
-  btn.disabled = false; btn.textContent = "기록하기";
+  const isEdit = !!editingVisit;
+  btn.disabled = true; btn.textContent = "저장 중…";
+  const fail = await saveVisit(openedCity, date, visitReview.value.trim(), editingVisit?.id);
+  btn.disabled = false; btn.textContent = isEdit ? "수정하기" : "기록하기";
   if(fail){ err.textContent = fail; return; }
   closeVisitModal();
-  toast(`${CITY_MAP[openedCity].n}에 발자국을 남겼어요 🧳`);
+  toast(isEdit ? "기록을 고쳤어요 ✏️" : `${CITY_MAP[openedCity].n}에 발자국을 남겼어요 🧳`);
 };
 
 /* ══════════════════════════════════════════════════════════════
-   10) 검색
+   12) 검색 (한글 · 영문 · 초성)
 ══════════════════════════════════════════════════════════════ */
+const CHO = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+const choseong = s=>[...s].map(ch=>{
+  const c = ch.charCodeAt(0);
+  return (c>=0xAC00 && c<=0xD7A3) ? CHO[Math.floor((c-0xAC00)/588)] : ch;
+}).join("");
+const isChoQuery = q=>/^[ㄱ-ㅎ]+$/.test(q);
+function matchCity(c, q){
+  const ql = q.toLowerCase();
+  if(c.n.includes(q) || c.c.includes(q)) return true;
+  if(c.e.toLowerCase().includes(ql) || c.id.includes(ql)) return true;
+  if(isChoQuery(q) && (choseong(c.n).includes(q) || choseong(c.c).includes(q))) return true;
+  return false;
+}
 const searchEl = document.getElementById("search");
 const suggestEl = document.getElementById("suggest");
 searchEl.addEventListener("input",()=>{
   const q = searchEl.value.trim();
   if(!q){ suggestEl.classList.remove("open"); return; }
-  const hits = CITIES.filter(c=>c.n.includes(q)||c.c.includes(q)||c.id.includes(q.toLowerCase())).slice(0,8);
+  const hits = CITIES.filter(c=>matchCity(c,q)).slice(0,8);
   if(!hits.length){ suggestEl.innerHTML = `<button disabled>검색 결과가 없어요</button>`; }
   else suggestEl.innerHTML = hits.map(c=>
     `<button data-id="${c.id}"><span>${c.n}</span><small>${c.c} · ${visitCounts[c.id]||0}회</small></button>`).join("");
@@ -855,38 +1129,34 @@ document.addEventListener("click",e=>{
 });
 
 /* ══════════════════════════════════════════════════════════════
-   11) 랭킹
+   13) 랭킹 (닉네임 전체 표시)
 ══════════════════════════════════════════════════════════════ */
 const rankOverlay = document.getElementById("rankOverlay");
 function openRank(){
   const byUser = {};
   allVisits.forEach(v=>{
-    (byUser[v.uid] ??= {name:v.name, count:0, cities:new Set()});
+    (byUser[v.uid] ??= {fallback:v.name, count:0, cities:new Set()});
     byUser[v.uid].count++; byUser[v.uid].cities.add(v.cityId);
-    if(v.name!=="여행자") byUser[v.uid].name = v.name;
+    if(v.name!=="여행자") byUser[v.uid].fallback = v.name;
   });
-  const rows = Object.entries(byUser)
-    .sort((a,b)=>b[1].count-a[1].count || b[1].cities.size-a[1].cities.size)
-    .slice(0,10);
+  const sorted = Object.entries(byUser)
+    .sort((a,b)=>b[1].count-a[1].count || b[1].cities.size-a[1].cities.size);
+  const rows = sorted.slice(0,10);
   const list = document.getElementById("rankList");
   if(!rows.length){
     list.innerHTML = `<li class="emptynote">아직 기록된 여행이 없어요. 첫 발자국의 주인공이 되어보세요!</li>`;
   }else{
-    list.innerHTML = rows.map(([uid,u],i)=>{
+    const rowHtml = (uid,u,rank)=>{
       const me = currentUser && uid===currentUser.uid;
       return `<li${me?' class="me"':''}>
-        <span class="no">${i+1}</span>
-        <span class="nm">${esc(u.name)}${me?'<small>나</small>':''}</span>
+        <span class="no">${rank}</span>
+        <span class="nm">${esc(nameOf(uid, u.fallback))}${me?'<small>나</small>':''}</span>
         <span class="ct"><b>${u.count}</b>회 여행<br/>${u.cities.size}개 도시</span></li>`;
-    }).join("");
-    // 10위 밖의 나
+    };
+    list.innerHTML = rows.map(([uid,u],i)=>rowHtml(uid,u,i+1)).join("");
     if(currentUser && !rows.some(([uid])=>uid===currentUser.uid) && byUser[currentUser.uid]){
-      const myRank = Object.entries(byUser).sort((a,b)=>b[1].count-a[1].count)
-        .findIndex(([uid])=>uid===currentUser.uid)+1;
-      const me = byUser[currentUser.uid];
-      list.innerHTML += `<li class="me"><span class="no">${myRank}</span>
-        <span class="nm">${esc(me.name)}<small>나</small></span>
-        <span class="ct"><b>${me.count}</b>회 여행<br/>${me.cities.size}개 도시</span></li>`;
+      const myRank = sorted.findIndex(([uid])=>uid===currentUser.uid)+1;
+      list.innerHTML += rowHtml(currentUser.uid, byUser[currentUser.uid], myRank);
     }
   }
   rankOverlay.classList.add("open");
@@ -897,12 +1167,45 @@ document.getElementById("rankClose").onclick = closeRank;
 setupOverlay(rankOverlay, closeRank);
 
 /* ══════════════════════════════════════════════════════════════
-   12) 로그인
+   14) 닉네임 / 프로필
+══════════════════════════════════════════════════════════════ */
+const profileOverlay = document.getElementById("profileOverlay");
+function openProfile(firstTime){
+  document.getElementById("profileTitle").textContent =
+    firstTime ? "닉네임을 정해주세요" : "닉네임 변경";
+  document.getElementById("profileCancel").textContent =
+    firstTime ? "나중에 할게요" : "닫기";
+  document.getElementById("profileNick").value = usersMap[currentUser?.uid] || "";
+  document.getElementById("profileErr").textContent = "";
+  profileOverlay.classList.add("open");
+  document.getElementById("profileNick").focus();
+}
+function closeProfile(){ profileOverlay.classList.remove("open"); }
+document.getElementById("profileCancel").onclick = closeProfile;
+setupOverlay(profileOverlay, closeProfile);
+document.getElementById("profileSave").onclick = async ()=>{
+  const err = document.getElementById("profileErr");
+  const nick = document.getElementById("profileNick").value.trim();
+  if(nick.length < 2 || nick.length > 20){ err.textContent = "닉네임은 2~20자로 입력해 주세요."; return; }
+  const btn = document.getElementById("profileSave");
+  btn.disabled = true;
+  const fail = await saveNickname(nick);
+  btn.disabled = false;
+  if(fail){ err.textContent = fail; return; }
+  closeProfile(); toast(`반가워요, ${nick}님 ✈`);
+};
+
+/* ══════════════════════════════════════════════════════════════
+   15) 로그인 · 가입 · 비밀번호 재설정
 ══════════════════════════════════════════════════════════════ */
 const authOverlay = document.getElementById("authOverlay");
 let signupMode = false;
-function openAuth(){ authOverlay.classList.add("open"); document.getElementById("authErr").textContent=""; }
+function openAuth(){ authOverlay.classList.add("open"); setAuthMsg(""); }
 function closeAuth(){ authOverlay.classList.remove("open"); }
+function setAuthMsg(msg, ok){
+  const el = document.getElementById("authErr");
+  el.textContent = msg; el.classList.toggle("ok", !!ok);
+}
 document.getElementById("authCancel").onclick = closeAuth;
 setupOverlay(authOverlay, closeAuth);
 
@@ -910,44 +1213,72 @@ document.getElementById("authToggle").onclick = ()=>{
   signupMode = !signupMode;
   document.getElementById("authTitle").textContent = signupMode?"여행자 가입":"여행자 로그인";
   document.getElementById("authSubmit").textContent = signupMode?"가입하기":"로그인";
+  document.getElementById("authNickWrap").style.display = signupMode?"":"none";
+  document.getElementById("authForgot").style.display = signupMode?"none":"";
   document.getElementById("authSwitch").firstChild.textContent =
     signupMode?"이미 계정이 있나요? ":"아직 계정이 없나요? ";
   document.getElementById("authToggle").textContent = signupMode?"로그인":"가입하기";
+  setAuthMsg("");
 };
+
+const AUTH_MSGS = {
+  "auth/invalid-email":"이메일 형식이 올바르지 않아요.",
+  "auth/weak-password":"비밀번호는 6자 이상이어야 해요.",
+  "auth/email-already-in-use":"이미 가입된 이메일이에요. 로그인해 주세요.",
+  "auth/invalid-credential":"이메일 또는 비밀번호가 맞지 않아요.",
+  "auth/user-not-found":"등록되지 않은 이메일이에요.",
+  "auth/wrong-password":"비밀번호가 맞지 않아요.",
+  "auth/too-many-requests":"시도가 너무 많았어요. 잠시 후 다시 시도해 주세요.",
+  "auth/missing-password":"비밀번호를 입력해 주세요.",
+};
+
 document.getElementById("authSubmit").onclick = async ()=>{
   const email = document.getElementById("authEmail").value.trim();
   const pw = document.getElementById("authPw").value;
-  const err = document.getElementById("authErr");
   if(DEMO){
-    if(!email){ err.textContent="이메일(또는 닉네임)을 입력해 주세요."; return; }
-    currentUser = {uid:"demo-"+email, name:email.split("@")[0]};
-    renderUser(); recompute(); closeAuth(); toast(`${currentUser.name}님, 즐거운 여행 되세요 ✈`);
+    if(!email){ setAuthMsg("이메일(또는 닉네임)을 입력해 주세요."); return; }
+    currentUser = {uid:"demo-"+email, email};
+    usersMap[currentUser.uid] = email.split("@")[0];
+    renderUser(); recompute(); closeAuth();
+    toast(`${myNickname()}님, 즐거운 여행 되세요 ✈`);
     return;
   }
   try{
-    if(signupMode) await fb.createUserWithEmailAndPassword(fb.auth,email,pw);
-    else await fb.signInWithEmailAndPassword(fb.auth,email,pw);
+    if(signupMode){
+      const nick = document.getElementById("authNick").value.trim();
+      if(nick.length < 2 || nick.length > 20){ setAuthMsg("닉네임은 2~20자로 입력해 주세요."); return; }
+      const cred = await fb.createUserWithEmailAndPassword(fb.auth,email,pw);
+      nickPrompted = true; // 가입 시 바로 저장하므로 재요청 안 함
+      await fb.setDoc(fb.doc(fb.db,"users",cred.user.uid), {nickname:nick});
+    }else{
+      await fb.signInWithEmailAndPassword(fb.auth,email,pw);
+    }
     closeAuth();
   }catch(e){
-    const msgs = {
-      "auth/invalid-email":"이메일 형식이 올바르지 않아요.",
-      "auth/weak-password":"비밀번호는 6자 이상이어야 해요.",
-      "auth/email-already-in-use":"이미 가입된 이메일이에요. 로그인해 주세요.",
-      "auth/invalid-credential":"이메일 또는 비밀번호가 맞지 않아요.",
-      "auth/user-not-found":"등록되지 않은 이메일이에요.",
-      "auth/wrong-password":"비밀번호가 맞지 않아요.",
-      "auth/too-many-requests":"시도가 너무 많았어요. 잠시 후 다시 시도해 주세요.",
-    };
-    err.textContent = msgs[e.code] || "로그인에 실패했어요. 잠시 후 다시 시도해 주세요.";
+    setAuthMsg(AUTH_MSGS[e.code] || "요청에 실패했어요. 잠시 후 다시 시도해 주세요.");
   }
 };
+
+document.getElementById("authForgot").onclick = async ()=>{
+  const email = document.getElementById("authEmail").value.trim();
+  if(DEMO){ setAuthMsg("데모 모드에서는 사용할 수 없어요."); return; }
+  if(!email){ setAuthMsg("가입한 이메일을 위에 입력한 뒤 눌러주세요."); return; }
+  try{
+    await fb.sendPasswordResetEmail(fb.auth, email);
+    setAuthMsg("재설정 메일을 보냈어요. 메일함(스팸함 포함)을 확인해 주세요.", true);
+  }catch(e){
+    setAuthMsg(AUTH_MSGS[e.code] || "메일 발송에 실패했어요. 이메일 주소를 확인해 주세요.");
+  }
+};
+
 function renderUser(){
   const box = document.getElementById("userbox");
   if(currentUser){
-    box.innerHTML = `<span class="who">✈ ${esc(currentUser.name)}</span>
+    box.innerHTML = `<button class="btn who" id="profileBtn" title="닉네임 변경">✈ ${esc(myNickname())}</button>
       <button class="btn" id="logoutBtn">로그아웃</button>`;
+    document.getElementById("profileBtn").onclick = ()=>openProfile(false);
     document.getElementById("logoutBtn").onclick = async ()=>{
-      if(DEMO){ currentUser=null; renderUser(); recompute(); }
+      if(DEMO){ currentUser=null; if(myMode) setMyMode(false); renderUser(); recompute(); }
       else await fb.signOut(fb.auth);
       toast("다음 여행에서 만나요!");
     };
@@ -957,25 +1288,50 @@ function renderUser(){
   }
 }
 document.getElementById("loginBtn").onclick = openAuth;
+// Enter 키 제출
+["authEmail","authPw","authNick"].forEach(id=>{
+  document.getElementById(id).addEventListener("keydown",e=>{
+    if(e.key==="Enter") document.getElementById("authSubmit").click();
+  });
+});
+document.getElementById("profileNick").addEventListener("keydown",e=>{
+  if(e.key==="Enter") document.getElementById("profileSave").click();
+});
 
 /* ══════════════════════════════════════════════════════════════
-   13) 통계 · ESC · 토스트 · 초기화
+   16) 통계 · ESC · 토스트 · 초기화
 ══════════════════════════════════════════════════════════════ */
 function renderStats(){
   const fv = filteredVisits();
-  document.getElementById("statsTitle").innerHTML =
-    currentMonth ? `<em>${currentMonth}월</em>의 발자국` : "지금까지의 발자국";
-  document.getElementById("statVisits").textContent =
-    dataLoaded||DEMO ? fv.length.toLocaleString() : "…";
-  document.getElementById("statCities").textContent =
-    dataLoaded||DEMO ? Object.keys(visitCounts).length : "…";
-  document.getElementById("statMine").textContent =
-    currentUser ? `${fv.filter(v=>v.uid===currentUser.uid).length}회` : "–";
+  const loaded = dataLoaded || DEMO;
+  const t = document.getElementById("statsTitle");
+  if(myMode){
+    const myFv = fv.filter(v=>currentUser && v.uid===currentUser.uid);
+    t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>, 나의 발자국` : "나의 발자국";
+    document.getElementById("statL1").textContent = "나의 여행";
+    document.getElementById("statL2").textContent = "다녀온 도시";
+    document.getElementById("statL3").textContent = "다녀온 국가";
+    document.getElementById("statVisits").textContent = myFv.length.toLocaleString();
+    document.getElementById("statCities").textContent = new Set(myFv.map(v=>v.cityId)).size;
+    document.getElementById("statMine").textContent =
+      new Set(myFv.map(v=>CITY_MAP[v.cityId].c)).size + "곳";
+  }else{
+    t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>의 발자국` : "지금까지의 발자국";
+    document.getElementById("statL1").textContent = "기록된 여행";
+    document.getElementById("statL2").textContent = "불이 켜진 도시";
+    document.getElementById("statL3").textContent = "나의 여행";
+    document.getElementById("statVisits").textContent = loaded ? fv.length.toLocaleString() : "…";
+    document.getElementById("statCities").textContent = loaded ? Object.keys(visitCounts).length : "…";
+    document.getElementById("statMine").textContent =
+      currentUser ? `${fv.filter(v=>v.uid===currentUser.uid).length}회` : "–";
+  }
 }
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
   if(visitOverlay.classList.contains("open")) closeVisitModal();
+  else if(profileOverlay.classList.contains("open")) closeProfile();
   else if(rankOverlay.classList.contains("open")) closeRank();
+  else if(journalOverlay.classList.contains("open")) closeJournal();
   else if(authOverlay.classList.contains("open")) closeAuth();
   else if(panel.classList.contains("open")) panel.classList.remove("open");
 });
@@ -992,7 +1348,7 @@ if(DEMO){
   allVisits = makeDemoVisits(); dataLoaded = true;
   recompute();
 }else{
-  recompute(); // 마커 먼저 표시
+  recompute();
   initFirebase().catch(e=>{
     console.error(e);
     toast("Firebase 초기화에 실패했어요. 설정값을 확인해 주세요.");
