@@ -292,11 +292,24 @@
   .modal .forgot:hover{color:var(--amber);}
 
   /* ── 랭킹 ────────────────────────────── */
+  .tabs{display:flex;gap:6px;margin:10px 0 12px;padding:5px;
+    background:var(--ink);border:1px solid var(--line);border-radius:999px;}
+  .tab{
+    flex:1;border:none;border-radius:999px;padding:8px 0;cursor:pointer;
+    background:transparent;color:var(--muted);font-size:13.5px;font-weight:600;
+    font-family:var(--body);transition:background .15s,color .15s;
+  }
+  .tab.on{background:var(--amber);color:#231607;}
+  .tab:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
   .rank-list{list-style:none;margin-top:6px;}
   .rank-list li{
     display:flex;align-items:center;gap:12px;
-    padding:11px 4px;border-bottom:1px solid var(--line);font-size:14px;
+    padding:11px 10px;border-bottom:1px solid var(--line);font-size:14px;
+    border-radius:10px;
   }
+  .rank-list li.city{cursor:pointer;}
+  .rank-list li.city:hover .nm{color:var(--amber);}
+  .rank-list .nm .co{color:var(--muted);font-size:12px;}
   .rank-list li.me{background:var(--teal-soft);border-radius:10px;padding:11px 10px;}
   .rank-list .no{
     font-family:var(--display);font-size:16px;width:26px;text-align:center;
@@ -501,11 +514,15 @@
   </div>
 </div>
 
-<!-- 랭킹 모달 -->
+<!-- 랭킹 모달 (여행지 / 여행자 TOP 10) -->
 <div class="overlay" id="rankOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rankTitle">
-    <h2 id="rankTitle">🏆 여행자 랭킹</h2>
-    <p class="sub">가장 많은 여행을 공유한 여행자들이에요.</p>
+    <h2 id="rankTitle">🏆 모두의 TOP 10</h2>
+    <div class="tabs" id="rankTabs">
+      <button class="tab on" data-tab="cities">인기 여행지</button>
+      <button class="tab" data-tab="users">여행자 랭킹</button>
+    </div>
+    <p class="sub" id="rankSub"></p>
     <ol class="rank-list" id="rankList"></ol>
     <button class="btn alt" id="rankClose">닫기</button>
   </div>
@@ -955,30 +972,44 @@ L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.p
 
 const markerLayer = L.layerGroup().addTo(map);
 function radiusFor(count){ return count ? 6 + Math.sqrt(count)*2.6 : 4; }
+// 확대할수록 도시 원이 상대적으로 작아 보이는 문제 보정 (줌 5 초과부터 점진 확대, 최대 3배)
+function zoomScale(){
+  const z = map.getZoom();
+  return z <= 5 ? 1 : Math.min(3, 1 + (z-5)*0.45);
+}
+map.on("zoomend", ()=>{
+  const f = zoomScale();
+  markerLayer.eachLayer(m=>{ if(m._baseR) m.setRadius(m._baseR * f); });
+});
 function drawMarkers(){
   markerLayer.clearLayers();
+  const f = zoomScale();
   CITIES.forEach(city=>{
     const total = visitCounts[city.id]||0;
     const mine = myCounts[city.id]||0;
-    let opt, tip;
+    let baseR, opt, tip;
     if(myMode){
       if(mine){
-        opt = {radius:radiusFor(mine), color:"#59dcc9", weight:2.5,
+        baseR = radiusFor(mine);
+        opt = {color:"#59dcc9", weight:2.5,
                fillColor:"#59dcc9", fillOpacity:.5, opacity:.95};
         tip = `${city.n} · 나의 여행 ${mine}회`;
       }else{
-        opt = {radius:3, color:"#f2ecdf", weight:1,
+        baseR = 3;
+        opt = {color:"#f2ecdf", weight:1,
                fillColor:"#f2ecdf", fillOpacity:.06, opacity:.18};
         tip = `${city.n} · 아직 여행 기록이 없어요`;
       }
     }else{
-      opt = {radius:radiusFor(total),
-             color: mine ? "#59dcc9" : "#ffb65c", weight: mine ? 2.5 : 1.5,
+      baseR = radiusFor(total);
+      opt = {color: mine ? "#59dcc9" : "#ffb65c", weight: mine ? 2.5 : 1.5,
              fillColor:"#ffb65c", fillOpacity: total ? .55 : .15,
              opacity: total ? .95 : .45};
       tip = `${city.n} · ${total}회${mine?" · 나의 도시":""}`;
     }
+    opt.radius = baseR * f;
     const m = L.circleMarker([city.lat,city.lng],opt);
+    m._baseR = baseR;
     m.bindTooltip(tip,{direction:"top", className:"city-tip", offset:[0,-4]});
     m.on("click",()=>openCity(city.id));
     m.addTo(markerLayer);
@@ -1426,20 +1457,51 @@ document.addEventListener("click",e=>{
    13) 랭킹 (닉네임 전체 표시)
 ══════════════════════════════════════════════════════════════ */
 const rankOverlay = document.getElementById("rankOverlay");
-function openRank(){
-  const byUser = {};
-  allVisits.forEach(v=>{
-    (byUser[v.uid] ??= {fallback:v.name, count:0, cities:new Set()});
-    byUser[v.uid].count++; byUser[v.uid].cities.add(v.cityId);
-    if(v.name!=="여행자") byUser[v.uid].fallback = v.name;
-  });
-  const sorted = Object.entries(byUser)
-    .sort((a,b)=>b[1].count-a[1].count || b[1].cities.size-a[1].cities.size);
-  const rows = sorted.slice(0,10);
+let rankTab = "cities";
+function openRank(){ renderRank(); rankOverlay.classList.add("open"); }
+function renderRank(){
+  document.querySelectorAll("#rankTabs .tab").forEach(t=>
+    t.classList.toggle("on", t.dataset.tab===rankTab));
   const list = document.getElementById("rankList");
-  if(!rows.length){
-    list.innerHTML = `<li class="emptynote">아직 공유된 여행이 없어요. 나의 여행을 먼저 공유해보세요!</li>`;
+  const sub = document.getElementById("rankSub");
+  if(rankTab==="cities"){
+    // ── 인기 여행지 TOP 10 (월 필터 연동) ──
+    sub.textContent = currentMonth
+      ? `${currentMonth}월에 가장 많은 여행이 기록된 곳이에요. 눌러서 구경해 보세요!`
+      : "가장 많은 여행이 기록된 여행지예요. 눌러서 구경해 보세요!";
+    const rows = Object.entries(visitCounts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    if(!rows.length){
+      list.innerHTML = `<li class="emptynote">${
+        currentMonth ? `${currentMonth}월의 기록이 아직 없어요.` : "아직 공유된 여행이 없어요. 나의 여행을 먼저 공유해보세요!"}</li>`;
+      return;
+    }
+    const max = rows[0][1];
+    list.innerHTML = rows.map(([id,cnt],i)=>{
+      const c = CITY_MAP[id];
+      const pct = Math.max(4, Math.round(cnt/max*100));
+      const mine = myCounts[id] ? ' <small>✓ 나</small>' : '';
+      return `<li class="city" data-id="${id}"
+        style="background:linear-gradient(90deg, rgba(255,182,92,.14) ${pct}%, transparent ${pct}%)">
+        <span class="no">${i+1}</span>
+        <span class="nm">${esc(c.n)}<span class="co"> · ${esc(c.c)}</span>${mine}</span>
+        <span class="ct"><b>${cnt}</b>회</span></li>`;
+    }).join("");
   }else{
+    // ── 여행자 랭킹 TOP 10 (전체 기간) ──
+    sub.textContent = "가장 많은 여행을 공유한 여행자들이에요.";
+    const byUser = {};
+    allVisits.forEach(v=>{
+      (byUser[v.uid] ??= {fallback:v.name, count:0, cities:new Set()});
+      byUser[v.uid].count++; byUser[v.uid].cities.add(v.cityId);
+      if(v.name!=="여행자") byUser[v.uid].fallback = v.name;
+    });
+    const sorted = Object.entries(byUser)
+      .sort((a,b)=>b[1].count-a[1].count || b[1].cities.size-a[1].cities.size);
+    const rows = sorted.slice(0,10);
+    if(!rows.length){
+      list.innerHTML = `<li class="emptynote">아직 공유된 여행이 없어요. 나의 여행을 먼저 공유해보세요!</li>`;
+      return;
+    }
     const rowHtml = (uid,u,rank)=>{
       const me = currentUser && uid===currentUser.uid;
       return `<li${me?' class="me"':''}>
@@ -1453,8 +1515,15 @@ function openRank(){
       list.innerHTML += rowHtml(currentUser.uid, byUser[currentUser.uid], myRank);
     }
   }
-  rankOverlay.classList.add("open");
 }
+document.getElementById("rankTabs").addEventListener("click",e=>{
+  const t = e.target.closest(".tab"); if(!t) return;
+  rankTab = t.dataset.tab; renderRank();
+});
+document.getElementById("rankList").addEventListener("click",e=>{
+  const li = e.target.closest("li.city"); if(!li) return;
+  closeRank(); openCity(li.dataset.id);
+});
 function closeRank(){ rankOverlay.classList.remove("open"); }
 document.getElementById("rankBtn").onclick = openRank;
 document.getElementById("rankClose").onclick = closeRank;
@@ -1548,8 +1617,9 @@ document.getElementById("authSubmit").onclick = async ()=>{
       nickPrompted = true;
       const fail = await saveNickname(nick);
       closeAuth();
-      if(fail){ // 극히 드문 동시 선점 경합 → 다른 닉네임 선택 유도
+      if(fail){ // 저장 실패(규칙 미적용·동시 선점 등) → 입력값 유지한 채 재설정 유도
         openProfile(true);
+        document.getElementById("profileNick").value = nick;
         document.getElementById("profileErr").textContent = fail;
       }
       return;
