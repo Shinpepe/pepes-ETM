@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>모두의 여행 공유 — 우리가 다녀온 세계</title>
-<meta name="description" content="우리가 다녀온 세계 각국의 도시에 불을 켜보세요. 방문 기록과 한 줄 후기, 월별 여행 시기까지." />
+<title>모두의 여행 공유 — 우리가 만드는 세계 여행 지도</title>
+<meta name="description" content="우리가 다녀온 세계 각국의 도시를 공유해보세요. 방문 기록과 한 줄 후기, 최적의 여행 시기까지." />
 <!-- 링크 공유 미리보기 -->
 <meta property="og:type" content="website" />
 <meta property="og:title" content="모두의 여행 공유" />
-<meta property="og:description" content="우리가 다녀온 세계, 지도 위에 불을 켜다 ✈ 방문 기록·후기·여행 시기 공유 지도" />
+<meta property="og:description" content="우리가 만드는 세계 여행 지도 ✈ 방문 기록·후기·여행 시기 공유" />
 <meta property="og:image" content="https://shinpepe.github.io/pepes-ETM/og.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
@@ -26,7 +26,7 @@
     --line:rgba(242,236,223,.12);
     --amber:#ffb65c;        /* 도시의 불빛 */
     --amber-soft:rgba(255,182,92,.16);
-    --teal:#59dcc9;         /* 내 발자국 */
+    --teal:#59dcc9;         /* 나의 여행 기록 */
     --teal-soft:rgba(89,220,201,.15);
     --paper:#f2ecdf;        /* 따뜻한 흰색 */
     --muted:rgba(242,236,223,.62);
@@ -389,7 +389,7 @@
   </div>
   <div class="searchwrap">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f2ecdf" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-    <input id="search" type="search" placeholder="도시 검색 (파리 / paris / ㅍㄹ)" autocomplete="off" aria-label="도시 검색" />
+    <input id="search" type="search" placeholder="도시 검색" autocomplete="off" aria-label="도시 검색" />
     <div class="suggest" id="suggest" role="listbox"></div>
   </div>
   <div class="spacer"></div>
@@ -404,9 +404,9 @@
 <nav class="months" id="months" aria-label="월별 보기"></nav>
 
 <aside class="stats" id="statsBox" aria-live="polite">
-  <h2 id="statsTitle">지금까지의 발자국</h2>
+  <h2 id="statsTitle">지금까지 공유된 여행</h2>
   <div class="row"><span id="statL1">기록된 여행</span><b id="statVisits">…</b></div>
-  <div class="row"><span id="statL2">불이 켜진 도시</span><b id="statCities">…</b></div>
+  <div class="row"><span id="statL2">기록된 도시</span><b id="statCities">…</b></div>
   <div class="row"><span id="statL3">나의 여행</span><b id="statMine">–</b></div>
   <button class="btn journal-btn" id="journalBtn">📖 여행 기록 보기</button>
   <div class="legend">
@@ -436,7 +436,7 @@
     <h3>주요 관광지</h3>
     <ul class="spots" id="panelSpots"></ul>
     <div id="myTripsSection" style="display:none">
-      <h3>나의 발자국</h3>
+      <h3>나의 여행 기록</h3>
       <ul class="mytrips" id="myTrips"></ul>
     </div>
     <h3>여행자의 한 줄</h3>
@@ -454,14 +454,14 @@
 <!-- 로그인 모달 -->
 <div class="overlay" id="authOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-    <h2 id="authTitle">여행자 로그인</h2>
-    <p class="sub" id="authSub">발자국을 남기려면 로그인이 필요해요.</p>
+    <h2 id="authTitle">로그인</h2>
+    <p class="sub" id="authSub">기록을 남기려면 로그인이 필요해요.</p>
     <label for="authEmail">이메일</label>
     <input id="authEmail" type="email" placeholder="you@example.com" />
     <label for="authPw">비밀번호</label>
     <input id="authPw" type="password" placeholder="6자 이상" />
     <div id="authNickWrap" style="display:none">
-      <label for="authNick">닉네임 <span style="opacity:.6">(랭킹에 표시, 2~20자)</span></label>
+      <label for="authNick">닉네임 <span style="opacity:.6">(랭킹에 표시 · 2~20자 · 중복 불가)</span></label>
       <input id="authNick" type="text" maxlength="20" placeholder="예: 방랑자무민" />
     </div>
     <a class="forgot" id="authForgot">비밀번호를 잊으셨나요?</a>
@@ -475,7 +475,7 @@
 <!-- 방문 기록 모달 (신규/수정 겸용) -->
 <div class="overlay" id="visitOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="visitTitle">
-    <h2 id="visitTitle">발자국 남기기</h2>
+    <h2 id="visitTitle">여행 기록 남기기</h2>
     <p class="sub" id="visitSub"></p>
     <label for="visitDate">방문 날짜</label>
     <input id="visitDate" type="date" />
@@ -492,7 +492,7 @@
 <div class="overlay" id="profileOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
     <h2 id="profileTitle">닉네임 설정</h2>
-    <p class="sub">랭킹에는 닉네임 전체가, 후기에는 앞 3자만 표시돼요.<br/>(예: shin0504 → shi*****)</p>
+    <p class="sub">랭킹에는 닉네임 전체가, 후기에는 앞 3자만 표시돼요. (예: shin0504 → shi*****)<br/>2~20자 · 한글/영문/숫자/-/_ · 다른 여행자와 중복될 수 없어요.</p>
     <label for="profileNick">닉네임 (2~20자)</label>
     <input id="profileNick" type="text" maxlength="20" placeholder="예: 방랑자무민" />
     <button class="btn primary" id="profileSave">저장</button>
@@ -505,7 +505,7 @@
 <div class="overlay" id="rankOverlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rankTitle">
     <h2 id="rankTitle">🏆 여행자 랭킹</h2>
-    <p class="sub">가장 많은 발자국을 남긴 여행자들이에요.</p>
+    <p class="sub">가장 많은 여행을 공유한 여행자들이에요.</p>
     <ol class="rank-list" id="rankList"></ol>
     <button class="btn alt" id="rankClose">닫기</button>
   </div>
@@ -769,7 +769,7 @@ async function initFirebase(){
   const [{initializeApp},
          {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,
           sendPasswordResetEmail,signOut},
-         {getFirestore,collection,addDoc,updateDoc,deleteDoc,doc,setDoc,onSnapshot,query,serverTimestamp}] = await Promise.all([
+         {getFirestore,collection,addDoc,updateDoc,deleteDoc,doc,setDoc,getDoc,writeBatch,onSnapshot,query,serverTimestamp}] = await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"),
@@ -778,11 +778,11 @@ async function initFirebase(){
   fb = {auth:getAuth(app), db:getFirestore(app),
     onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,
     sendPasswordResetEmail,signOut,
-    collection,addDoc,updateDoc,deleteDoc,doc,setDoc,onSnapshot,query,serverTimestamp};
+    collection,addDoc,updateDoc,deleteDoc,doc,setDoc,getDoc,writeBatch,onSnapshot,query,serverTimestamp};
 
   fb.onAuthStateChanged(fb.auth, u=>{
     currentUser = u ? {uid:u.uid, email:u.email} : null;
-    if(!currentUser){ nickPrompted = false; if(myMode) setMyMode(false); }
+    if(!currentUser){ nickPrompted = false; claimChecked = false; if(myMode) setMyMode(false); }
     renderUser(); recompute(); maybePromptNickname();
   });
   unsubUsers = fb.onSnapshot(fb.collection(fb.db,"users"), snap=>{
@@ -818,18 +818,66 @@ function myNickname(){
   return (usersMap[currentUser.uid] ||
     (currentUser.email ? currentUser.email.split("@")[0] : "여행자")).slice(0,40);
 }
+const NICK_RE = /^[가-힣a-zA-Z0-9_-]{2,20}$/;
 function maybePromptNickname(){
-  if(DEMO || nickPrompted || !currentUser || !usersLoaded) return;
-  if(usersMap[currentUser.uid]) return;
+  if(DEMO || !currentUser || !usersLoaded) return;
+  if(usersMap[currentUser.uid]){ ensureNicknameClaim(); return; }
+  if(nickPrompted) return;
   nickPrompted = true;
   openProfile(true);
 }
 async function saveNickname(nick){
-  if(DEMO){ usersMap[currentUser.uid] = nick; renderUser(); recompute(); return null; }
+  if(!NICK_RE.test(nick))
+    return "닉네임은 2~20자의 한글·영문·숫자·-·_만 쓸 수 있어요.";
+  const norm = nick.toLowerCase();
+  if(DEMO){
+    const taken = Object.entries(usersMap)
+      .some(([uid,n])=>uid!==currentUser.uid && n.toLowerCase()===norm);
+    if(taken) return "이미 사용 중인 닉네임이에요. 다른 닉네임을 골라주세요.";
+    usersMap[currentUser.uid] = nick; renderUser(); recompute(); return null;
+  }
   try{
-    await fb.setDoc(fb.doc(fb.db,"users",currentUser.uid), {nickname:nick});
+    // 1) 선점 여부 확인 (nicknames/{소문자 닉네임} 문서가 유일성을 보장)
+    const newRef = fb.doc(fb.db,"nicknames",norm);
+    const snap = await fb.getDoc(newRef);
+    if(snap.exists() && snap.data().uid !== currentUser.uid)
+      return "이미 사용 중인 닉네임이에요. 다른 닉네임을 골라주세요.";
+    // 2) 배치로 원자적 변경: 새 닉네임 선점 + 옛 선점 반납 + 표시 닉네임 저장
+    const batch = fb.writeBatch(fb.db);
+    const oldNick = usersMap[currentUser.uid];
+    if(oldNick && oldNick.toLowerCase() !== norm){
+      const oldRef = fb.doc(fb.db,"nicknames",oldNick.toLowerCase());
+      const oldSnap = await fb.getDoc(oldRef).catch(()=>null);
+      if(oldSnap?.exists() && oldSnap.data().uid===currentUser.uid) batch.delete(oldRef);
+    }
+    if(!snap.exists()) batch.set(newRef, {uid:currentUser.uid});
+    batch.set(fb.doc(fb.db,"users",currentUser.uid), {nickname:nick});
+    await batch.commit();
     return null;
-  }catch(e){ console.error(e); return "저장에 실패했어요. Firestore 규칙을 확인해 주세요."; }
+  }catch(e){
+    console.error(e);
+    if(e.code==="permission-denied")
+      return "방금 다른 사람이 같은 닉네임을 선점했어요. 다른 닉네임을 골라주세요.";
+    return "저장에 실패했어요. Firestore 규칙을 확인해 주세요.";
+  }
+}
+// 규칙 도입 전에 가입한 유저: 기존 닉네임을 자동으로 선점 (겹치면 변경 안내)
+let claimChecked = false;
+async function ensureNicknameClaim(){
+  if(DEMO || claimChecked || !currentUser) return;
+  const nick = usersMap[currentUser.uid]; if(!nick) return;
+  claimChecked = true;
+  try{
+    const ref = fb.doc(fb.db,"nicknames",nick.toLowerCase());
+    const snap = await fb.getDoc(ref);
+    if(!snap.exists()){
+      await fb.setDoc(ref, {uid:currentUser.uid});
+    }else if(snap.data().uid !== currentUser.uid){
+      openProfile(false);
+      document.getElementById("profileErr").textContent =
+        "사용 중이던 닉네임이 다른 계정과 겹쳐요. 새 닉네임으로 바꿔주세요.";
+    }
+  }catch(e){ console.error("nickname claim:", e); }
 }
 
 function filteredVisits(){
@@ -921,7 +969,7 @@ function drawMarkers(){
       }else{
         opt = {radius:3, color:"#f2ecdf", weight:1,
                fillColor:"#f2ecdf", fillOpacity:.06, opacity:.18};
-        tip = `${city.n} · 아직 발자국이 없어요`;
+        tip = `${city.n} · 아직 여행 기록이 없어요`;
       }
     }else{
       opt = {radius:radiusFor(total),
@@ -969,7 +1017,7 @@ function setMyMode(on){
 myModeBtn.onclick = ()=>{
   if(!currentUser){ openAuth(); return; }
   setMyMode(!myMode);
-  if(myMode) toast("내 발자국만 표시하고 있어요 🧭");
+  if(myMode) toast("내 여행 기록만 표시하고 있어요 🧭");
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -1043,7 +1091,7 @@ function openJournal(){
   renderProgress(mine);
   const list = document.getElementById("journalList");
   if(!mine.length){
-    list.innerHTML = `<li class="emptynote">아직 기록이 없어요. 지도의 도시를 눌러 첫 발자국을 남겨보세요!</li>`;
+    list.innerHTML = `<li class="emptynote">아직 기록이 없어요. 지도의 도시를 눌러 첫 여행을 기록해 보세요!</li>`;
   }else{
     let html="", lastYear=null;
     mine.forEach(v=>{
@@ -1085,6 +1133,7 @@ async function openCity(id){
   document.getElementById("panelDesc").textContent = city.d;
   document.getElementById("panelSpots").innerHTML = city.s.map(s=>`<li>${esc(s)}</li>`).join("");
   renderCityDynamic(id);
+  panel.querySelector(".panel-body").scrollTop = 0; // 도시 전환 시 스크롤 초기화
   const photoBox = document.getElementById("panelPhoto");
   const noimg = document.getElementById("panelNoimg");
   const note = document.getElementById("wikiNote");
@@ -1131,7 +1180,7 @@ function renderCityDynamic(id){
 
   renderMonthChart(id);
 
-  // 나의 발자국 (필터 무관, 전체)
+  // 나의 여행 기록 (필터 무관, 전체)
   const mineSec = document.getElementById("myTripsSection");
   const mineUl = document.getElementById("myTrips");
   const mine = currentUser
@@ -1172,7 +1221,7 @@ function renderMonthChart(id){
     if(v.cityId===id && v.date){ byMonth[+v.date.slice(5,7)-1]++; total++; }
   });
   if(total < 2){
-    wrap.innerHTML = `<div class="emptynote">아직 시기를 알려줄 기록이 부족해요. 발자국이 쌓이면 월별 그래프가 나타나요.</div>`;
+    wrap.innerHTML = `<div class="emptynote">아직 기록이 부족해요. 여행 기록이 쌓이면 월별 그래프가 나타나요.</div>`;
     return;
   }
   const max = Math.max(...byMonth);
@@ -1230,7 +1279,7 @@ async function shareCity(){
   if(!openedCity) return;
   const city = CITY_MAP[openedCity];
   const url = cityShareUrl(openedCity);
-  const text = `모두의 여행 공유 — ${city.n}(${city.c})의 발자국과 후기를 구경해 보세요!`;
+  const text = `모두의 여행 공유 — ${city.n}(${city.c})의 여행 기록과 후기를 구경해보세요!`;
   // 1) Web Share (사용자가 취소한 경우는 조용히 종료)
   if(navigator.share){
     try{ await navigator.share({title:"모두의 여행 공유", text, url}); return; }
@@ -1284,7 +1333,7 @@ function openVisitModal(editVisit){
   const city = CITY_MAP[openedCity];
   const today = new Date().toISOString().slice(0,10);
   document.getElementById("visitTitle").textContent =
-    editingVisit ? `${city.n} 기록 수정` : `${city.n} 발자국 남기기`;
+    editingVisit ? `${city.n} 기록 수정` : `${city.n} 여행 기록 남기기`;
   document.getElementById("visitSub").textContent =
     editingVisit ? "날짜와 후기를 고칠 수 있어요."
                  : "같은 도시라도 다른 날짜면 여러 번 기록할 수 있어요.";
@@ -1318,7 +1367,7 @@ document.getElementById("visitSave").onclick = async ()=>{
   btn.disabled = false; btn.textContent = isEdit ? "수정하기" : "기록하기";
   if(fail){ err.textContent = fail; return; }
   closeVisitModal();
-  toast(isEdit ? "기록을 고쳤어요 ✏️" : `${CITY_MAP[openedCity].n}에 발자국을 남겼어요 🧳`);
+  toast(isEdit ? "기록을 고쳤어요 ✏️" : `${CITY_MAP[openedCity].n}에 기록을 남겼어요 🧳`);
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -1339,6 +1388,14 @@ function matchCity(c, q){
 }
 const searchEl = document.getElementById("search");
 const suggestEl = document.getElementById("suggest");
+// 화면 폭에 맞는 placeholder (좁은 화면에서 잘리지 않도록)
+const phQuery = window.matchMedia("(min-width: 900px)");
+function updatePlaceholder(){
+  searchEl.placeholder = phQuery.matches
+    ? "도시 검색 (파리 / paris / ㅍㄹ)" : "도시 검색";
+}
+updatePlaceholder();
+phQuery.addEventListener("change", updatePlaceholder);
 searchEl.addEventListener("input",()=>{
   const q = searchEl.value.trim();
   if(!q){ suggestEl.classList.remove("open"); return; }
@@ -1351,6 +1408,15 @@ searchEl.addEventListener("input",()=>{
 suggestEl.addEventListener("click",e=>{
   const id = e.target.closest("button")?.dataset.id;
   if(id){ openCity(id); suggestEl.classList.remove("open"); searchEl.value=""; }
+});
+// Enter로 첫 번째 검색 결과 바로 열기
+searchEl.addEventListener("keydown",e=>{
+  if(e.key!=="Enter") return;
+  const first = suggestEl.querySelector("button[data-id]");
+  if(first){
+    openCity(first.dataset.id);
+    suggestEl.classList.remove("open"); searchEl.value=""; searchEl.blur();
+  }
 });
 document.addEventListener("click",e=>{
   if(!e.target.closest(".searchwrap")) suggestEl.classList.remove("open");
@@ -1372,7 +1438,7 @@ function openRank(){
   const rows = sorted.slice(0,10);
   const list = document.getElementById("rankList");
   if(!rows.length){
-    list.innerHTML = `<li class="emptynote">아직 기록된 여행이 없어요. 첫 발자국의 주인공이 되어보세요!</li>`;
+    list.innerHTML = `<li class="emptynote">아직 공유된 여행이 없어요. 나의 여행을 먼저 공유해보세요!</li>`;
   }else{
     const rowHtml = (uid,u,rank)=>{
       const me = currentUser && uid===currentUser.uid;
@@ -1414,7 +1480,6 @@ setupOverlay(profileOverlay, closeProfile);
 document.getElementById("profileSave").onclick = async ()=>{
   const err = document.getElementById("profileErr");
   const nick = document.getElementById("profileNick").value.trim();
-  if(nick.length < 2 || nick.length > 20){ err.textContent = "닉네임은 2~20자로 입력해 주세요."; return; }
   const btn = document.getElementById("profileSave");
   btn.disabled = true;
   const fail = await saveNickname(nick);
@@ -1439,7 +1504,7 @@ setupOverlay(authOverlay, closeAuth);
 
 document.getElementById("authToggle").onclick = ()=>{
   signupMode = !signupMode;
-  document.getElementById("authTitle").textContent = signupMode?"여행자 가입":"여행자 로그인";
+  document.getElementById("authTitle").textContent = signupMode?"회원가입":"로그인";
   document.getElementById("authSubmit").textContent = signupMode?"가입하기":"로그인";
   document.getElementById("authNickWrap").style.display = signupMode?"":"none";
   document.getElementById("authForgot").style.display = signupMode?"none":"";
@@ -1474,13 +1539,22 @@ document.getElementById("authSubmit").onclick = async ()=>{
   try{
     if(signupMode){
       const nick = document.getElementById("authNick").value.trim();
-      if(nick.length < 2 || nick.length > 20){ setAuthMsg("닉네임은 2~20자로 입력해 주세요."); return; }
+      if(!NICK_RE.test(nick)){ setAuthMsg("닉네임은 2~20자의 한글·영문·숫자·-·_만 쓸 수 있어요."); return; }
+      // 계정을 만들기 전에 닉네임 중복부터 확인
+      const pre = await fb.getDoc(fb.doc(fb.db,"nicknames",nick.toLowerCase()));
+      if(pre.exists()){ setAuthMsg("이미 사용 중인 닉네임이에요. 다른 닉네임을 골라주세요."); return; }
       const cred = await fb.createUserWithEmailAndPassword(fb.auth,email,pw);
-      nickPrompted = true; // 가입 시 바로 저장하므로 재요청 안 함
-      await fb.setDoc(fb.doc(fb.db,"users",cred.user.uid), {nickname:nick});
-    }else{
-      await fb.signInWithEmailAndPassword(fb.auth,email,pw);
+      currentUser = {uid:cred.user.uid, email};
+      nickPrompted = true;
+      const fail = await saveNickname(nick);
+      closeAuth();
+      if(fail){ // 극히 드문 동시 선점 경합 → 다른 닉네임 선택 유도
+        openProfile(true);
+        document.getElementById("profileErr").textContent = fail;
+      }
+      return;
     }
+    await fb.signInWithEmailAndPassword(fb.auth,email,pw);
     closeAuth();
   }catch(e){
     setAuthMsg(AUTH_MSGS[e.code] || "요청에 실패했어요. 잠시 후 다시 시도해 주세요.");
@@ -1535,7 +1609,7 @@ function renderStats(){
   const t = document.getElementById("statsTitle");
   if(myMode){
     const myFv = fv.filter(v=>currentUser && v.uid===currentUser.uid);
-    t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>, 나의 발자국` : "나의 발자국";
+    t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>, 나의 여행 기록` : "나의 여행 기록";
     document.getElementById("statL1").textContent = "나의 여행";
     document.getElementById("statL2").textContent = "다녀온 도시";
     document.getElementById("statL3").textContent = "다녀온 국가";
@@ -1544,9 +1618,9 @@ function renderStats(){
     document.getElementById("statMine").textContent =
       new Set(myFv.map(v=>CITY_MAP[v.cityId].c)).size + "곳";
   }else{
-    t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>의 발자국` : "지금까지의 발자국";
+    t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>의 여행` : "지금까지 공유된 여행";
     document.getElementById("statL1").textContent = "기록된 여행";
-    document.getElementById("statL2").textContent = "불이 켜진 도시";
+    document.getElementById("statL2").textContent = "기록된 도시";
     document.getElementById("statL3").textContent = "나의 여행";
     document.getElementById("statVisits").textContent = loaded ? fv.length.toLocaleString() : "…";
     document.getElementById("statCities").textContent = loaded ? Object.keys(visitCounts).length : "…";
