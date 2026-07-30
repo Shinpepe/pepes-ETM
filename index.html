@@ -381,7 +381,7 @@
   .modal.map{width:min(880px,100%);}
   .mapwrap{
     margin:8px 0 12px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
-    background:radial-gradient(130% 110% at 50% 0%, #0e1a30, var(--ink) 70%);
+    background:radial-gradient(140% 120% at 50% -10%, #0a1526 0%, #060d1b 40%, #03060d 100%);
   }
   .mapwrap svg{display:block;width:100%;height:auto;}
   .maplegend{
@@ -841,9 +841,12 @@ async function initFirebase(){
     collection,addDoc,updateDoc,deleteDoc,doc,setDoc,getDoc,writeBatch,onSnapshot,query,serverTimestamp};
 
   fb.onAuthStateChanged(fb.auth, u=>{
+    const wasOut = !currentUser;
     currentUser = u ? {uid:u.uid, email:u.email} : null;
-    if(!currentUser){ nickPrompted = false; claimChecked = false; if(myMode) setMyMode(false); closeMyMap(); }
+    if(!currentUser){ nickPrompted = false; claimChecked = false; if(myMode) setMyMode(false); closeMyMap(); pendingAction = null; }
     renderUser(); recompute(); maybePromptNickname();
+    // 로그인 때문에 끊겼던 행동 이어가기 (닉네임 설정 창이 떠 있으면 방해하지 않도록 보류)
+    if(wasOut && currentUser && !profileOverlay.classList.contains("open")) runPendingAction();
   });
   unsubUsers = fb.onSnapshot(fb.collection(fb.db,"users"), snap=>{
     usersMap = {};
@@ -1105,7 +1108,7 @@ function fitMyCities(){
   map.flyToBounds(L.latLngBounds(latlngs), {padding:[70,70], maxZoom:6, duration:1.1});
 }
 myModeBtn.onclick = ()=>{
-  if(!currentUser){ openAuth(); return; }
+  if(!currentUser){ pendingAction = myModeBtn.onclick; openAuth(); return; }
   setMyMode(!myMode);
   if(myMode){ toast("내 여행 기록만 표시하고 있어요 🧭"); fitMyCities(); }
 };
@@ -1162,16 +1165,16 @@ function renderProgress(mine){
     <div class="bignums">
       <div class="bignum"><b>${mine.length}</b><span>번의 여행</span></div>
       <div class="bignum"><b>${myCities.size}</b><span>개 도시</span></div>
-      <div class="bignum"><b>${myCountries.size}</b><span>개 국가</span></div>
+      <div class="bignum"><b>${myCountries.size}</b><span>개 국가·지역</span></div>
     </div>
     <div class="world">
-      <div class="wlabel"><span>세계 여행 진행도 (${totalC}개국 기준)</span><b>${pct}%</b></div>
+      <div class="wlabel"><span>세계 여행 진행도 (${totalC}개 국가·지역)</span><b>${pct}%</b></div>
       <div class="gauge"><i style="width:${Math.min(100,pct)}%"></i></div>
     </div>
     <div class="conts">${contHtml}</div>`;
 }
 function openJournal(){
-  if(!currentUser){ openAuth(); return; }
+  if(!currentUser){ pendingAction = openJournal; openAuth(); return; }
   const mine = allVisits.filter(v=>v.uid===currentUser.uid)
     .sort((a,b)=>{
       if(a.date && b.date) return b.date.localeCompare(a.date);
@@ -1280,26 +1283,41 @@ function buildMyMapSvg(geo, isoInfo, dotCities){
     const d = svgPathOf(f.geometry);
     const i = isoInfo[f.id];
     if(i){
-      lit.push(`<path d="${d}" fill-rule="evenodd" style="fill:var(--teal);fill-opacity:${coverOpacity(i.got/i.total).toFixed(2)};stroke:var(--teal);stroke-opacity:.55;stroke-width:.7"><title>${esc(i.tip)}</title></path>`);
+      lit.push(`<path d="${d}" fill-rule="evenodd" style="fill:var(--teal);fill-opacity:${coverOpacity(i.got/i.total).toFixed(2)};stroke:var(--teal);stroke-opacity:.75;stroke-width:.8;stroke-linejoin:round"><title>${esc(i.tip)}</title></path>`);
     }else{
-      base.push(`<path d="${d}" fill-rule="evenodd" style="fill:#182337;stroke:rgba(242,236,223,.07);stroke-width:.5"/>`);
+      base.push(`<path d="${d}" fill-rule="evenodd" style="fill:#2b3c5a;stroke:rgba(242,236,223,.17);stroke-width:.5;stroke-linejoin:round"/>`);
     }
   });
-  // 폴리곤이 없는 소국(홍콩·마카오·싱가포르·몰디브)은 글로우 점으로
-  const dots = dotCities.map(c=>{
+  // 폴리곤이 없는 소국(홍콩·마카오·싱가포르·몰디브)은 작은 섬 실루엣으로 자리를 메움
+  // — 색칠된 나라와 동일한 채움 농도·테두리·글로우를 써서 시각적으로 튀지 않게
+  const ISLAND_D = "M-3.6 0.4C-3.5 -1.6 -2.1 -2.9 -0.1 -3C1.8 -3.2 3.4 -2.2 3.6 -0.6C3.9 0.9 2.8 2.4 0.9 2.8C-1.2 3.1 -3.7 2.2 -3.6 0.4Z";
+  const islands = dotCities.map((c,idx)=>{
     const x = mapX(c.lng).toFixed(1), y = mapY(c.lat).toFixed(1);
-    return `<g><circle cx="${x}" cy="${y}" r="7" style="fill:var(--teal);opacity:.16"/>`
-         + `<circle cx="${x}" cy="${y}" r="3" style="fill:var(--teal);fill-opacity:${coverOpacity(c.ratio).toFixed(2)}"><title>${esc(c.tip)}</title></circle></g>`;
+    return `<path d="${ISLAND_D}" transform="translate(${x} ${y}) rotate(${(idx*70)%360})" `
+         + `style="fill:var(--teal);fill-opacity:${coverOpacity(c.ratio).toFixed(2)};stroke:var(--teal);stroke-opacity:.75;stroke-width:.8;stroke-linejoin:round">`
+         + `<title>${esc(c.tip)}</title></path>`;
   }).join("");
-  // 빈 극지방을 잘라낸 창: 북위 85° ~ 남위 60°
-  const top = mapY(85), h = mapY(-60) - top;
+  // 배경 경위선(30° 간격) — 밤 비행 항로도 느낌의 은은한 격자
+  const top = mapY(85), bottom = mapY(-60), h = bottom - top;
+  let grid = "";
+  for(let lng=-150; lng<=150; lng+=30)
+    grid += `<line x1="${mapX(lng)}" y1="${top.toFixed(0)}" x2="${mapX(lng)}" y2="${bottom.toFixed(0)}"/>`;
+  for(let lat=-30; lat<=60; lat+=30)
+    grid += `<line x1="0" y1="${mapY(lat)}" x2="${MAP_W}" y2="${mapY(lat)}"/>`;
   return `<svg viewBox="0 ${top.toFixed(0)} ${MAP_W} ${Math.ceil(h)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="나의 여행 지도">`
-       + base.join("") + lit.join("") + dots + `</svg>`;
+       + `<defs><filter id="mmGlow" x="-60%" y="-60%" width="220%" height="220%">`
+       + `<feGaussianBlur stdDeviation="3.2" result="b"/>`
+       + `<feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>`
+       + `</filter></defs>`
+       + `<g style="stroke:rgba(242,236,223,.06);stroke-width:.6">${grid}</g>`
+       + base.join("")
+       + `<g filter="url(#mmGlow)">${lit.join("")}${islands}</g>`
+       + `</svg>`;
 }
 
 const myMapOverlay = document.getElementById("myMapOverlay");
 async function openMyMap(){
-  if(!currentUser){ openAuth(); return; }
+  if(!currentUser){ pendingAction = openMyMap; openAuth(); return; }
   const {total, got} = myCountryStats();
   const countries = Object.keys(got);
   if(!countries.length){ toast("아직 기록이 없어요. 지도의 도시를 눌러 첫 여행을 기록해 보세요!"); return; }
@@ -1339,6 +1357,11 @@ let openedCity = null;
 const wikiCache = {};
 const esc = s=>String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtDate = d=> d ? `${+d.slice(0,4)}.${+d.slice(5,7)}.${+d.slice(8,10)}` : "날짜 미상";
+// 사용자의 로컬 기준 오늘 (toISOString은 UTC라 한국에서 자정~09시에 어제로 계산되는 버그가 있었음)
+const localToday = ()=>{
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+};
 
 async function openCity(id){
   const city = CITY_MAP[id]; if(!city) return;
@@ -1465,7 +1488,7 @@ document.getElementById("chartWrap").addEventListener("click",e=>{
 });
 
 async function reportVisit(visitId){
-  if(!currentUser){ openAuth(); return; }
+  if(!currentUser){ pendingAction = ()=>reportVisit(visitId); openAuth(); return; }
   if(!confirm("이 후기를 신고할까요? 운영자가 확인 후 조치해요.")) return;
   if(DEMO){ toast("신고가 접수됐어요. 확인 후 조치할게요."); return; }
   try{
@@ -1596,13 +1619,20 @@ function trapFocus(overlay){
 const visitOverlay = document.getElementById("visitOverlay");
 const visitDate = document.getElementById("visitDate");
 const visitReview = document.getElementById("visitReview");
+// 로그인 때문에 끊긴 행동을 로그인 성공 후 이어가기
+let pendingAction = null;
+function runPendingAction(){
+  const fn = pendingAction; pendingAction = null;
+  if(fn) setTimeout(fn, 150); // 모달 전환이 겹치지 않게 한 박자 뒤 실행
+}
+
 let editingVisit = null; // 수정 중이면 visit 객체
 function openVisitModal(editVisit){
   if(!openedCity) return;
-  if(!currentUser){ openAuth(); return; }
+  if(!currentUser){ pendingAction = ()=>openVisitModal(editVisit); openAuth(); return; }
   editingVisit = editVisit || null;
   const city = CITY_MAP[openedCity];
-  const today = new Date().toISOString().slice(0,10);
+  const today = localToday();
   document.getElementById("visitTitle").textContent =
     editingVisit ? `${city.n} 기록 수정` : `${city.n} 여행 기록 남기기`;
   document.getElementById("visitSub").textContent =
@@ -1631,7 +1661,7 @@ document.getElementById("visitSave").onclick = async ()=>{
   const date = visitDate.value;
   if(!date){ err.textContent = "방문 날짜를 선택해 주세요."; return; }
   if(date < "1950-01-01"){ err.textContent = "1950년 이후 날짜만 기록할 수 있어요."; return; }
-  if(date > new Date().toISOString().slice(0,10)){ err.textContent = "미래 날짜는 기록할 수 없어요."; return; }
+  if(date > localToday()){ err.textContent = "미래 날짜는 기록할 수 없어요."; return; }
   const btn = document.getElementById("visitSave");
   const isEdit = !!editingVisit;
   btn.disabled = true; btn.textContent = "저장 중…";
@@ -1674,7 +1704,7 @@ searchEl.addEventListener("input",()=>{
   const hits = CITIES.filter(c=>matchCity(c,q)).slice(0,8);
   if(!hits.length){ suggestEl.innerHTML = `<button disabled>검색 결과가 없어요</button>`; }
   else suggestEl.innerHTML = hits.map(c=>
-    `<button data-id="${c.id}"><span>${c.n}</span><small>${c.c} · ${visitCounts[c.id]||0}회</small></button>`).join("");
+    `<button data-id="${c.id}"><span>${esc(c.n)}</span><small>${esc(c.c)} · ${visitCounts[c.id]||0}회</small></button>`).join("");
   suggestEl.classList.add("open");
 });
 suggestEl.addEventListener("click",e=>{
@@ -1806,12 +1836,14 @@ const authOverlay = document.getElementById("authOverlay");
 let signupMode = false;
 function openAuth(){ authOverlay.classList.add("open"); setAuthMsg(""); modalOpened(authOverlay); }
 function closeAuth(){ authOverlay.classList.remove("open"); modalClosed(authOverlay); }
+// 사용자가 로그인 없이 창을 닫으면(취소·ESC·배경 클릭) 보류된 행동도 함께 취소
+function cancelAuth(){ pendingAction = null; closeAuth(); }
 function setAuthMsg(msg, ok){
   const el = document.getElementById("authErr");
   el.textContent = msg; el.classList.toggle("ok", !!ok);
 }
-document.getElementById("authCancel").onclick = closeAuth;
-setupOverlay(authOverlay, closeAuth);
+document.getElementById("authCancel").onclick = cancelAuth;
+setupOverlay(authOverlay, cancelAuth);
 
 document.getElementById("authToggle").onclick = ()=>{
   signupMode = !signupMode;
@@ -1845,6 +1877,7 @@ document.getElementById("authSubmit").onclick = async ()=>{
     usersMap[currentUser.uid] = email.split("@")[0];
     renderUser(); recompute(); closeAuth();
     toast(`${myNickname()}님, 즐거운 여행 되세요 ✈`);
+    runPendingAction();
     return;
   }
   try{
@@ -1924,11 +1957,11 @@ function renderStats(){
     t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>, 나의 여행 기록` : "나의 여행 기록";
     document.getElementById("statL1").textContent = "나의 여행";
     document.getElementById("statL2").textContent = "다녀온 도시";
-    document.getElementById("statL3").textContent = "다녀온 국가";
+    document.getElementById("statL3").textContent = "다녀온 국가·지역";
     document.getElementById("statVisits").textContent = myFv.length.toLocaleString();
     document.getElementById("statCities").textContent = new Set(myFv.map(v=>v.cityId)).size;
     document.getElementById("statMine").textContent =
-      new Set(myFv.map(v=>CITY_MAP[v.cityId].c)).size + "곳";
+      new Set(myFv.map(v=>normCountry(CITY_MAP[v.cityId].c))).size + "곳";  // 하와이=미국 병합(진행도와 동일 기준)
   }else{
     t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>의 여행` : "지금까지 공유된 여행";
     document.getElementById("statL1").textContent = "기록된 여행";
@@ -1948,7 +1981,7 @@ document.addEventListener("keydown",e=>{
   else if(profileOverlay.classList.contains("open")) closeProfile();
   else if(rankOverlay.classList.contains("open")) closeRank();
   else if(journalOverlay.classList.contains("open")) closeJournal();
-  else if(authOverlay.classList.contains("open")) closeAuth();
+  else if(authOverlay.classList.contains("open")) cancelAuth();
   else if(panel.classList.contains("open")) closePanel();
 });
 let toastTimer;
