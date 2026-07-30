@@ -229,7 +229,7 @@
   /* ── 여행 진행도 ─────────────────────── */
   .modal.wide{width:min(440px,100%);}
   .progress{margin:6px 0 14px;}
-  .progress .bignums{display:flex;gap:8px;margin-bottom:14px;}
+  .progress .bignums{display:flex;gap:8px;margin:18px 0 14px;}
   .progress .bignum{
     flex:1;background:var(--ink);border:1px solid var(--line);border-radius:14px;
     padding:12px 8px;text-align:center;
@@ -376,8 +376,14 @@
     border-top:1px solid var(--line);
   }
 
-  /* ── 나의 여행 지도 (별도 창 · 국가 색칠) ── */
-  .mymap-btn{width:100%;margin:14px 0 18px;}
+  /* ── 나의 여행 지도 · 여행 카드 (별도 창) ── */
+  .mymap-row{display:flex;gap:10px;margin:14px 0 18px;}
+  .mymap-row .btn{flex:1;padding:12px 8px;font-size:14px;white-space:nowrap;}
+  .modal.cardm{width:min(560px,100%);}
+  .cardwrap{margin:8px 0 14px;border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .cardwrap canvas{display:block;width:100%;height:auto;}
+  .card-actions{display:flex;gap:10px;}
+  .card-actions .btn{flex:1;}
   .modal.map{width:min(880px,100%);}
   .mapwrap{
     margin:8px 0 12px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
@@ -559,7 +565,10 @@
   <div class="modal wide" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="journalTitle">
     <h2 id="journalTitle">📖 나의 여행 기록</h2>
     <div class="progress" id="progressBox"></div>
-    <button class="btn primary mymap-btn" id="myMapBtn">🗺 나의 여행 지도 보기</button>
+    <div class="mymap-row">
+      <button class="btn primary" id="myMapBtn">🗺 나의 여행 지도</button>
+      <button class="btn primary" id="tripCardBtn">🖼 여행 카드 저장</button>
+    </div>
     <div class="journal-scroll">
       <ul class="journal" id="journalList"></ul>
     </div>
@@ -577,6 +586,19 @@
       <span class="grad"><i></i>많은 도시를 방문한 나라일수록 색이 진하게 표시됩니다.</span>
     </div>
     <button class="btn alt" id="myMapCloseBtn">닫기</button>
+  </div>
+</div>
+
+<!-- 여행 카드 모달 -->
+<div class="overlay" id="cardOverlay">
+  <div class="modal cardm" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="cardTitle">
+    <h2 id="cardTitle">🖼 나의 여행 카드</h2>
+    <p class="sub">이미지를 저장해 어디든 공유해보세요.</p>
+    <div class="cardwrap"><canvas id="cardCanvas" width="1080" height="1080" aria-label="나의 여행 카드 미리보기"></canvas></div>
+    <div class="card-actions">
+      <button class="btn primary" id="cardSaveBtn">💾 저장</button>
+      <button class="btn alt" id="cardCloseBtn">닫기</button>
+    </div>
   </div>
 </div>
 
@@ -843,7 +865,7 @@ async function initFirebase(){
   fb.onAuthStateChanged(fb.auth, u=>{
     const wasOut = !currentUser;
     currentUser = u ? {uid:u.uid, email:u.email} : null;
-    if(!currentUser){ nickPrompted = false; claimChecked = false; if(myMode) setMyMode(false); closeMyMap(); pendingAction = null; }
+    if(!currentUser){ nickPrompted = false; claimChecked = false; if(myMode) setMyMode(false); closeMyMap(); closeTripCard(); pendingAction = null; }
     renderUser(); recompute(); maybePromptNickname();
     // 로그인 때문에 끊겼던 행동 이어가기 (닉네임 설정 창이 떠 있으면 방해하지 않도록 보류)
     if(wasOut && currentUser && !profileOverlay.classList.contains("open")) runPendingAction();
@@ -1348,6 +1370,189 @@ function closeMyMap(){ myMapOverlay.classList.remove("open"); modalClosed(myMapO
 document.getElementById("myMapBtn").onclick = openMyMap;
 document.getElementById("myMapCloseBtn").onclick = closeMyMap;
 setupOverlay(myMapOverlay, closeMyMap);
+
+/* ══════════════════════════════════════════════════════════════
+   8.6) 여행 카드 — 결산 이미지(1080×1080)를 Canvas로 그려 PNG 저장
+        디자인: cardD_v2 (eyebrow → amber 브랜드 → 흰색 제목 → 통계 3박스 → 지도 → URL)
+══════════════════════════════════════════════════════════════ */
+const cardOverlay = document.getElementById("cardOverlay");
+const CARD = { W:1080, H:1080, padL:76, padT:92, padB:56 };
+
+function myTripStats(){
+  const mine = allVisits.filter(v=>v.uid===currentUser.uid);
+  return { trips:mine.length,
+    cities:new Set(mine.map(v=>v.cityId)).size,
+    dests:new Set(mine.map(v=>normCountry(CITY_MAP[v.cityId].c))).size }; // 진행도와 동일 기준
+}
+// 둥근 사각형 path (roundRect 미지원 브라우저 폴백)
+function rrPath(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  if(ctx.roundRect){ ctx.roundRect(x,y,w,h,r); return; }
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+
+async function drawTripCard(canvas){
+  const {W,H,padL,padT,padB} = CARD;
+  const ctx = canvas.getContext("2d");
+  const geo = await loadWorldGeo();
+  // 폰트가 캔버스에 실제로 얹히도록 선로딩
+  try{ await Promise.all([
+    document.fonts.load('700 58px "Gowun Batang"'),
+    document.fonts.load('700 34px "Gowun Batang"'),
+    document.fonts.load('600 22px "Pretendard Variable"'),
+    document.fonts.load('400 23px "Pretendard Variable"'),
+    document.fonts.ready ]); }catch(e){}
+
+  // ── 배경 (카드 공통: 밤바다 radial)
+  const bg = ctx.createRadialGradient(W/2,-H*0.1,0, W/2,-H*0.1, H*1.35);
+  bg.addColorStop(0,"#0a1526"); bg.addColorStop(.4,"#060d1b"); bg.addColorStop(1,"#03060d");
+  ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
+
+  // ── 상단 문구
+  ctx.textBaseline = "top";
+  let y = padT;
+  ctx.fillStyle = "rgba(242,236,223,.62)";
+  ctx.font = '600 22px "Pretendard Variable", Pretendard, sans-serif';
+  try{ ctx.letterSpacing = "5px"; }catch(e){}
+  ctx.fillText("EVERYONE'S TRAVEL MAP", padL, y);
+  try{ ctx.letterSpacing = "0px"; }catch(e){}
+  y += 26 + 18;
+  ctx.fillStyle = "#ffb65c";
+  ctx.font = '700 34px "Gowun Batang", serif';
+  ctx.fillText("모두의 여행 공유", padL, y);
+  y += 46 + 10;
+  ctx.fillStyle = "#f2ecdf";
+  ctx.font = '700 58px "Gowun Batang", serif';
+  const title = `${myNickname()}의 세계 여행 지도`;
+  ctx.fillText(title, padL, y, W - padL*2); // 최대폭 제한(긴 닉네임은 자동 압축)
+  y += 72;
+
+  // ── 남는 세로 공간을 간격에 배분해 균형 잡기
+  const stats = myTripStats();
+  const boxH = 172, gapBase = 56;
+  const mapW = W - padL*2, mapH = Math.round(mapW * 403/1000);
+  const footH = 26;
+  const leftover = H - padB - footH - 16   // 푸터 위 여유
+                 - (y + gapBase + boxH + gapBase + mapH);
+  const gap = gapBase + Math.max(0, Math.floor(leftover/2));
+
+  // ── 통계 박스 3개
+  y += gap;
+  const bw = (mapW - 20*2)/3;
+  const nums = [[stats.dests,"개 국가·지역"],[stats.cities,"개 도시"],[stats.trips,"번의 여행"]];
+  nums.forEach(([n,label],i)=>{
+    const x = padL + i*(bw+20);
+    ctx.fillStyle = "rgba(17,27,44,.65)";
+    rrPath(ctx,x,y,bw,boxH,28); ctx.fill();
+    ctx.strokeStyle = "rgba(242,236,223,.12)"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#59dcc9";
+    ctx.font = '700 68px "Gowun Batang", serif';
+    ctx.fillText(String(n), x+bw/2, y+34);
+    ctx.fillStyle = "rgba(242,236,223,.62)";
+    ctx.font = '400 23px "Pretendard Variable", Pretendard, sans-serif';
+    ctx.fillText(label, x+bw/2, y+34+76);
+    ctx.textAlign = "left";
+  });
+  y += boxH + gap;
+
+  // ── 지도 (나의 여행 지도와 동일한 투영·팔레트)
+  const {total, got} = myCountryStats();
+  const geoIds = new Set(geo.features.map(f=>f.id));
+  const litIso = {}, dotList = [];
+  Object.keys(got).forEach(k=>{
+    const iso = COUNTRY_ISO[k];
+    if(iso && geoIds.has(iso)) litIso[iso] = got[k]/total[k];
+    else CITIES.filter(c=>mapCountry(c.c)===k)
+      .forEach(c=>dotList.push({lng:c.lng, lat:c.lat, r:got[k]/total[k]}));
+  });
+  const vTop = mapY(85), vH = mapY(-60) - vTop, k = mapW/1000;
+  ctx.save();
+  rrPath(ctx, padL, y, mapW, mapH, 28); ctx.clip();
+  ctx.strokeStyle = "rgba(242,236,223,.12)"; // 테두리는 클립 해제 후
+  ctx.translate(padL, y - vTop*k); ctx.scale(k,k);
+  // 경위선
+  ctx.strokeStyle = "rgba(242,236,223,.06)"; ctx.lineWidth = .6/k*1.2;
+  ctx.beginPath();
+  for(let l=-150;l<=150;l+=30){ ctx.moveTo(mapX(l), vTop); ctx.lineTo(mapX(l), vTop+vH); }
+  for(let l=-30;l<=60;l+=30){ ctx.moveTo(0, mapY(l)); ctx.lineTo(1000, mapY(l)); }
+  ctx.stroke();
+  const geomPath = geom=>{
+    const path = new Path2D();
+    ringsOf(geom).forEach(r=>{
+      r.forEach((pt,i)=>{ const x=mapX(pt[0]), yy=mapY(pt[1]);
+        i ? path.lineTo(x,yy) : path.moveTo(x,yy); });
+      path.closePath();
+    });
+    return path;
+  };
+  // 미방문 대륙
+  ctx.fillStyle = "#2b3c5a"; ctx.strokeStyle = "rgba(242,236,223,.17)"; ctx.lineWidth = .5;
+  geo.features.forEach(f=>{
+    if(f.id==="ATA" || litIso[f.id]!==undefined) return;
+    const path = geomPath(f.geometry);
+    ctx.fill(path,"evenodd"); ctx.stroke(path);
+  });
+  // 방문국 (teal + 글로우)
+  ctx.shadowColor = "rgba(89,220,201,.9)"; ctx.shadowBlur = 8;
+  geo.features.forEach(f=>{
+    if(litIso[f.id]===undefined) return;
+    const path = geomPath(f.geometry);
+    ctx.globalAlpha = coverOpacity(litIso[f.id]);
+    ctx.fillStyle = "#59dcc9"; ctx.fill(path,"evenodd");
+    ctx.globalAlpha = .75; ctx.strokeStyle = "#59dcc9"; ctx.lineWidth = .8; ctx.stroke(path);
+  });
+  // 폴리곤 없는 소국 → 섬 실루엣
+  const isl = new Path2D("M-3.6 0.4C-3.5 -1.6 -2.1 -2.9 -0.1 -3C1.8 -3.2 3.4 -2.2 3.6 -0.6C3.9 0.9 2.8 2.4 0.9 2.8C-1.2 3.1 -3.7 2.2 -3.6 0.4Z");
+  dotList.forEach((d,i)=>{
+    ctx.save();
+    ctx.translate(mapX(d.lng), mapY(d.lat)); ctx.rotate((i*70)%360*Math.PI/180);
+    ctx.globalAlpha = coverOpacity(d.r); ctx.fillStyle = "#59dcc9"; ctx.fill(isl);
+    ctx.globalAlpha = .75; ctx.strokeStyle = "#59dcc9"; ctx.lineWidth = .8; ctx.stroke(isl);
+    ctx.restore();
+  });
+  ctx.restore(); // 클립 해제
+  ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+  rrPath(ctx, padL, y, mapW, mapH, 28);
+  ctx.strokeStyle = "rgba(242,236,223,.12)"; ctx.lineWidth = 2; ctx.stroke();
+
+  // ── 푸터 URL
+  ctx.fillStyle = "rgba(242,236,223,.62)";
+  ctx.font = '400 22px "Pretendard Variable", Pretendard, sans-serif';
+  ctx.textAlign = "center";
+  ctx.fillText("shinpepe.github.io/pepes-ETM", W/2, H - padB - footH + 4);
+  ctx.textAlign = "left";
+}
+
+async function openTripCard(){
+  if(!currentUser){ pendingAction = openTripCard; openAuth(); return; }
+  if(!allVisits.some(v=>v.uid===currentUser.uid)){
+    toast("아직 기록이 없어요. 지도의 도시를 눌러 첫 여행을 기록해 보세요!"); return; }
+  const canvas = document.getElementById("cardCanvas");
+  try{ await drawTripCard(canvas); }
+  catch(e){ console.error(e); toast("여행 카드를 만들지 못했어요. 잠시 후 다시 시도해 주세요."); return; }
+  // 여행 기록 위에 겹쳐 띄움 — 닫으면 여행 기록으로 복귀 (나의 여행 지도와 동일한 패턴)
+  cardOverlay.classList.add("open");
+  modalOpened(cardOverlay);
+}
+function closeTripCard(){ cardOverlay.classList.remove("open"); modalClosed(cardOverlay); }
+function saveTripCard(){
+  const canvas = document.getElementById("cardCanvas");
+  canvas.toBlob(blob=>{
+    if(!blob){ toast("저장에 실패했어요. 잠시 후 다시 시도해 주세요."); return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `travel-card-${localToday()}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 3000);
+    toast("여행 카드를 저장했어요 🖼");
+  }, "image/png");
+}
+document.getElementById("tripCardBtn").onclick = openTripCard;
+document.getElementById("cardSaveBtn").onclick = saveTripCard;
+document.getElementById("cardCloseBtn").onclick = closeTripCard;
+setupOverlay(cardOverlay, closeTripCard);
 
 /* ══════════════════════════════════════════════════════════════
    9) 도시 패널
@@ -1973,10 +2178,11 @@ function renderStats(){
       currentUser ? `${fv.filter(v=>v.uid===currentUser.uid).length}회` : "–";
   }
 }
-[authOverlay, visitOverlay, profileOverlay, rankOverlay, journalOverlay, myMapOverlay].forEach(trapFocus);
+[authOverlay, visitOverlay, profileOverlay, rankOverlay, journalOverlay, myMapOverlay, cardOverlay].forEach(trapFocus);
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
-  if(myMapOverlay.classList.contains("open")) closeMyMap();
+  if(cardOverlay.classList.contains("open")) closeTripCard();
+  else if(myMapOverlay.classList.contains("open")) closeMyMap();
   else if(visitOverlay.classList.contains("open")) closeVisitModal();
   else if(profileOverlay.classList.contains("open")) closeProfile();
   else if(rankOverlay.classList.contains("open")) closeRank();
