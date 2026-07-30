@@ -209,8 +209,14 @@
   .mytrips .act.danger:hover{color:#ff8f8f;background:rgba(255,143,143,.1);}
   .reviews{list-style:none}
   .reviews li{padding:10px 0;border-bottom:1px solid var(--line);}
-  .reviews .meta{font-size:12px;color:var(--muted);margin-bottom:3px;}
+  .reviews .meta{font-size:12px;color:var(--muted);margin-bottom:3px;display:flex;align-items:center;gap:6px;}
   .reviews .meta b{color:var(--amber);font-weight:600;}
+  .rep-btn{
+    margin-left:auto;background:none;border:none;cursor:pointer;
+    font-size:11px;color:var(--muted);opacity:.55;padding:2px 4px;border-radius:6px;
+    transition:opacity .15s;
+  }
+  .rep-btn:hover,.rep-btn:focus-visible{opacity:1;color:var(--amber);}
   .reviews .txt{font-size:13.5px;line-height:1.6;}
   .emptynote{font-size:13px;color:var(--muted);padding:8px 0;line-height:1.6;}
   .panel-actions{padding:14px 20px 20px;flex-shrink:0;border-top:1px solid var(--line);}
@@ -370,6 +376,25 @@
     border-top:1px solid var(--line);
   }
 
+  /* ── 나의 여행 지도 (별도 창 · 국가 색칠) ── */
+  .mymap-btn{width:100%;margin:14px 0 18px;}
+  .modal.map{width:min(880px,100%);}
+  .mapwrap{
+    margin:8px 0 12px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    background:radial-gradient(130% 110% at 50% 0%, #0e1a30, var(--ink) 70%);
+  }
+  .mapwrap svg{display:block;width:100%;height:auto;}
+  .maplegend{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    font-size:12px;color:var(--muted);margin-bottom:14px;
+  }
+  .maplegend .grad{display:inline-flex;align-items:center;gap:7px;}
+  .maplegend .grad i{
+    width:64px;height:8px;border-radius:4px;
+    background:linear-gradient(90deg, rgba(89,220,201,.2), rgba(89,220,201,.8));
+  }
+  .modal:focus{outline:none}
+
   @media (max-width:720px){
     .topbar{flex-wrap:wrap;padding:10px 12px;gap:8px;}
     .brand span{display:none}
@@ -467,7 +492,7 @@
 
 <!-- 로그인 모달 -->
 <div class="overlay" id="authOverlay">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="modal" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="authTitle">
     <h2 id="authTitle">로그인</h2>
     <p class="sub" id="authSub">기록을 남기려면 로그인이 필요해요.</p>
     <label for="authEmail">이메일</label>
@@ -488,7 +513,7 @@
 
 <!-- 방문 기록 모달 (신규/수정 겸용) -->
 <div class="overlay" id="visitOverlay">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="visitTitle">
+  <div class="modal" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="visitTitle">
     <h2 id="visitTitle">여행 기록 남기기</h2>
     <p class="sub" id="visitSub"></p>
     <label for="visitDate">방문 날짜</label>
@@ -504,7 +529,7 @@
 
 <!-- 닉네임/프로필 모달 -->
 <div class="overlay" id="profileOverlay">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+  <div class="modal" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="profileTitle">
     <h2 id="profileTitle">닉네임 설정</h2>
     <p class="sub">랭킹에는 닉네임 전체가, 후기에는 앞 3자만 표시돼요. (예: shin0504 → shi*****)<br/>2~20자 · 한글/영문/숫자/-/_ · 다른 여행자와 중복될 수 없어요.</p>
     <label for="profileNick">닉네임 (2~20자)</label>
@@ -517,7 +542,7 @@
 
 <!-- 랭킹 모달 (여행지 / 여행자 TOP 10) -->
 <div class="overlay" id="rankOverlay">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rankTitle">
+  <div class="modal" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="rankTitle">
     <h2 id="rankTitle">🏆 모두의 TOP 10</h2>
     <div class="tabs" id="rankTabs">
       <button class="tab on" data-tab="cities">인기 여행지</button>
@@ -531,13 +556,27 @@
 
 <!-- 여행 기록 모달 -->
 <div class="overlay" id="journalOverlay">
-  <div class="modal wide" role="dialog" aria-modal="true" aria-labelledby="journalTitle">
+  <div class="modal wide" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="journalTitle">
     <h2 id="journalTitle">📖 나의 여행 기록</h2>
     <div class="progress" id="progressBox"></div>
+    <button class="btn primary mymap-btn" id="myMapBtn">🗺 나의 여행 지도 보기</button>
     <div class="journal-scroll">
       <ul class="journal" id="journalList"></ul>
     </div>
     <button class="btn alt" id="journalClose">닫기</button>
+  </div>
+</div>
+
+<!-- 나의 여행 지도 모달 -->
+<div class="overlay" id="myMapOverlay">
+  <div class="modal wide map" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="myMapTitle">
+    <h2 id="myMapTitle">🗺 나의 여행 지도</h2>
+    <p class="sub" id="myMapSub"></p>
+    <div class="mapwrap" id="myMapWrap"></div>
+    <div class="maplegend">
+      <span class="grad"><i></i>많은 도시를 방문한 나라일수록 색이 진하게 표시됩니다.</span>
+    </div>
+    <button class="btn alt" id="myMapCloseBtn">닫기</button>
   </div>
 </div>
 
@@ -803,7 +842,7 @@ async function initFirebase(){
 
   fb.onAuthStateChanged(fb.auth, u=>{
     currentUser = u ? {uid:u.uid, email:u.email} : null;
-    if(!currentUser){ nickPrompted = false; claimChecked = false; if(myMode) setMyMode(false); }
+    if(!currentUser){ nickPrompted = false; claimChecked = false; if(myMode) setMyMode(false); closeMyMap(); }
     renderUser(); recompute(); maybePromptNickname();
   });
   unsubUsers = fb.onSnapshot(fb.collection(fb.db,"users"), snap=>{
@@ -1047,10 +1086,28 @@ function setMyMode(on){
   document.getElementById("statsBox").classList.toggle("mine", on);
   recompute();
 }
+// 내 여행 모드 진입 시 내 도시가 전부 보이도록 카메라 이동
+// (도쿄+뉴욕처럼 태평양을 사이에 둔 기록도 가장 좁은 화면이 되도록 경도 보정)
+function fitMyCities(){
+  const pts = Object.keys(myCounts).map(id=>CITY_MAP[id]).filter(Boolean);
+  if(!pts.length) return;
+  if(pts.length===1){
+    map.flyTo([pts[0].lat, pts[0].lng], Math.max(map.getZoom(), 5), {duration:1.1});
+    return;
+  }
+  const lngs = pts.map(p=>p.lng).sort((a,b)=>a-b);
+  // 경도들 사이에서 가장 큰 빈 구간을 찾아, 그 구간이 화면 밖(경계)이 되도록 회전
+  let cut = null, maxGap = lngs[0] + 360 - lngs[lngs.length-1]; // 기본: 날짜변경선 쪽 틈
+  for(let i=0;i<lngs.length-1;i++){
+    if(lngs[i+1]-lngs[i] > maxGap){ maxGap = lngs[i+1]-lngs[i]; cut = lngs[i]; }
+  }
+  const latlngs = pts.map(p=>[p.lat, (cut!==null && p.lng<=cut) ? p.lng+360 : p.lng]);
+  map.flyToBounds(L.latLngBounds(latlngs), {padding:[70,70], maxZoom:6, duration:1.1});
+}
 myModeBtn.onclick = ()=>{
   if(!currentUser){ openAuth(); return; }
   setMyMode(!myMode);
-  if(myMode) toast("내 여행 기록만 표시하고 있어요 🧭");
+  if(myMode){ toast("내 여행 기록만 표시하고 있어요 🧭"); fitMyCities(); }
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -1139,14 +1196,140 @@ function openJournal(){
     list.innerHTML = html;
   }
   journalOverlay.classList.add("open");
+  modalOpened(journalOverlay);
 }
-function closeJournal(){ journalOverlay.classList.remove("open"); }
+function closeJournal(){ journalOverlay.classList.remove("open"); modalClosed(journalOverlay); }
 document.getElementById("journalBtn").onclick = openJournal;
 document.getElementById("journalClose").onclick = closeJournal;
 document.getElementById("journalList").addEventListener("click",e=>{
   const btn = e.target.closest(".trip"); if(!btn) return;
   closeJournal(); openCity(btn.dataset.id);
 });
+
+/* ══════════════════════════════════════════════════════════════
+   8.5) 나의 여행 지도 — 별도 창(SVG 세계지도)에 다녀온 국가 색칠
+        · 커버율(다녀온 도시/그 나라 전체 도시)에 비례해 진해짐 (20~80%)
+        · 등장방형 투영 — og.png와 같은 계열이라 결산 카드에 재활용 예정
+══════════════════════════════════════════════════════════════ */
+// 국가(한글) → ISO3 (세계 GeoJSON의 feature.id와 매칭)
+const COUNTRY_ISO = {
+  "대한민국":"KOR","일본":"JPN","대만":"TWN","홍콩":"HKG","마카오":"MAC","중국":"CHN",
+  "태국":"THA","싱가포르":"SGP","말레이시아":"MYS","인도네시아":"IDN","베트남":"VNM",
+  "필리핀":"PHL","캄보디아":"KHM","라오스":"LAO","몰디브":"MDV","네팔":"NPL",
+  "인도":"IND","스리랑카":"LKA","몽골":"MNG","우즈베키스탄":"UZB","카자흐스탄":"KAZ",
+  "아랍에미리트":"ARE","카타르":"QAT","튀르키예":"TUR","요르단":"JOR",
+  "조지아":"GEO","아제르바이잔":"AZE","아르메니아":"ARM",
+  "영국":"GBR","아일랜드":"IRL","프랑스":"FRA","이탈리아":"ITA","스페인":"ESP","포르투갈":"PRT",
+  "네덜란드":"NLD","벨기에":"BEL","독일":"DEU","체코":"CZE","오스트리아":"AUT","헝가리":"HUN",
+  "폴란드":"POL","크로아티아":"HRV","스위스":"CHE","그리스":"GRC","몰타":"MLT","핀란드":"FIN",
+  "스웨덴":"SWE","덴마크":"DNK","노르웨이":"NOR","아이슬란드":"ISL","에스토니아":"EST","러시아":"RUS",
+  "미국":"USA","캐나다":"CAN",
+  "멕시코":"MEX","쿠바":"CUB","페루":"PER","브라질":"BRA","아르헨티나":"ARG",
+  "볼리비아":"BOL","칠레":"CHL","콜롬비아":"COL","도미니카공화국":"DOM",
+  "호주":"AUS","뉴질랜드":"NZL",
+  "이집트":"EGY","남아프리카공화국":"ZAF","모로코":"MAR","탄자니아":"TZA","케냐":"KEN","짐바브웨":"ZWE",
+};
+// 미국령 영토는 지도 색칠에서 미국으로 병합 (여행 진행도 통계는 기존대로 별도 국가 유지)
+const US_TERRITORY = new Set(["미국령 괌","북마리아나 제도"]);
+const mapCountry = c => { const n = normCountry(c); return US_TERRITORY.has(n) ? "미국" : n; };
+
+const WORLD_GEO_URL = "https://cdn.jsdelivr.net/gh/johan/world.geo.json@master/countries.geo.json";
+let worldGeo = null, worldGeoLoading = null;
+function loadWorldGeo(){
+  if(worldGeo) return Promise.resolve(worldGeo);
+  if(!worldGeoLoading)
+    worldGeoLoading = fetch(WORLD_GEO_URL)
+      .then(r=>{ if(!r.ok) throw new Error("geo "+r.status); return r.json(); })
+      .then(g=>{ worldGeo = g; return g; })
+      .catch(e=>{ worldGeoLoading = null; throw e; });
+  return worldGeoLoading;
+}
+// 커버율 → 채움 농도 20%~80% (순수 비례로는 도시 많은 나라가 안 보여서 바닥값을 둠)
+const coverOpacity = r => 0.2 + 0.6 * r;
+
+function myCountryStats(){
+  // 여행 진행도와 같은 기준: 월 필터와 무관하게 전체 기록으로 계산
+  const mineAll = currentUser ? allVisits.filter(v=>v.uid===currentUser.uid) : [];
+  const myCitySet = new Set(mineAll.map(v=>v.cityId));
+  const total = {}, got = {};
+  CITIES.forEach(c=>{
+    const k = mapCountry(c.c);
+    total[k] = (total[k]||0)+1;
+    if(myCitySet.has(c.id)) got[k] = (got[k]||0)+1;
+  });
+  return {total, got};
+}
+
+// ── 등장방형 투영: lng→x, lat→y 선형 매핑
+const MAP_W = 1000, MAP_H = 500;
+const mapX = lng => (lng+180)*(MAP_W/360);
+const mapY = lat => (90-lat)*(MAP_H/180);
+const ringsOf = g => g.type==="Polygon" ? g.coordinates : g.coordinates.flat();
+function svgPathOf(geom){
+  let d = "";
+  ringsOf(geom).forEach(r=>{
+    r.forEach((pt,i)=>{ d += (i?"L":"M") + mapX(pt[0]).toFixed(1) + " " + mapY(pt[1]).toFixed(1); });
+    d += "Z";
+  });
+  return d;
+}
+function buildMyMapSvg(geo, isoInfo, dotCities){
+  const base = [], lit = [];
+  geo.features.forEach(f=>{
+    if(f.id==="ATA") return; // 남극 제외
+    const d = svgPathOf(f.geometry);
+    const i = isoInfo[f.id];
+    if(i){
+      lit.push(`<path d="${d}" fill-rule="evenodd" style="fill:var(--teal);fill-opacity:${coverOpacity(i.got/i.total).toFixed(2)};stroke:var(--teal);stroke-opacity:.55;stroke-width:.7"><title>${esc(i.tip)}</title></path>`);
+    }else{
+      base.push(`<path d="${d}" fill-rule="evenodd" style="fill:#182337;stroke:rgba(242,236,223,.07);stroke-width:.5"/>`);
+    }
+  });
+  // 폴리곤이 없는 소국(홍콩·마카오·싱가포르·몰디브)은 글로우 점으로
+  const dots = dotCities.map(c=>{
+    const x = mapX(c.lng).toFixed(1), y = mapY(c.lat).toFixed(1);
+    return `<g><circle cx="${x}" cy="${y}" r="7" style="fill:var(--teal);opacity:.16"/>`
+         + `<circle cx="${x}" cy="${y}" r="3" style="fill:var(--teal);fill-opacity:${coverOpacity(c.ratio).toFixed(2)}"><title>${esc(c.tip)}</title></circle></g>`;
+  }).join("");
+  // 빈 극지방을 잘라낸 창: 북위 85° ~ 남위 60°
+  const top = mapY(85), h = mapY(-60) - top;
+  return `<svg viewBox="0 ${top.toFixed(0)} ${MAP_W} ${Math.ceil(h)}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="나의 여행 지도">`
+       + base.join("") + lit.join("") + dots + `</svg>`;
+}
+
+const myMapOverlay = document.getElementById("myMapOverlay");
+async function openMyMap(){
+  if(!currentUser){ openAuth(); return; }
+  const {total, got} = myCountryStats();
+  const countries = Object.keys(got);
+  if(!countries.length){ toast("아직 기록이 없어요. 지도의 도시를 눌러 첫 여행을 기록해 보세요!"); return; }
+  let geo;
+  try{ geo = await loadWorldGeo(); }
+  catch(e){ console.error(e); toast("세계 지도 데이터를 불러오지 못했어요. 잠시 후 다시 시도해 주세요."); return; }
+
+  const geoIds = new Set(geo.features.map(f=>f.id));
+  const isoInfo = {}, dotCities = [];
+  countries.forEach(k=>{
+    const tip = `${k} · ${total[k]}개 도시 중 ${got[k]}곳`
+              + (k==="미국" ? " (괌·사이판 포함)" : "");
+    const iso = COUNTRY_ISO[k];
+    if(iso && geoIds.has(iso)){
+      isoInfo[iso] = {got:got[k], total:total[k], tip};
+    }else{
+      CITIES.filter(c=>mapCountry(c.c)===k).forEach(c=>
+        dotCities.push({lat:c.lat, lng:c.lng, ratio:got[k]/total[k], tip}));
+    }
+  });
+  document.getElementById("myMapWrap").innerHTML = buildMyMapSvg(geo, isoInfo, dotCities);
+  document.getElementById("myMapSub").textContent =
+    "지금까지 방문한 나라들이에요. 나라 위에 마우스를 올리면 상세하게 볼 수 있어요.";
+  myMapOverlay.classList.add("open");
+  modalOpened(myMapOverlay);
+}
+function closeMyMap(){ myMapOverlay.classList.remove("open"); modalClosed(myMapOverlay); }
+document.getElementById("myMapBtn").onclick = openMyMap;
+document.getElementById("myMapCloseBtn").onclick = closeMyMap;
+setupOverlay(myMapOverlay, closeMyMap);
 
 /* ══════════════════════════════════════════════════════════════
    9) 도시 패널
@@ -1235,9 +1418,13 @@ function renderCityDynamic(id){
     .sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.ts-a.ts))
     .slice(0,6);
   if(revs.length){
-    revUl.innerHTML = revs.map(v=>
-      `<li><div class="meta"><b>${esc(mask(nameOf(v.uid, v.name)))}</b> · ${fmtDate(v.date)}</div>
-       <div class="txt">${esc(v.review)}</div></li>`).join("");
+    revUl.innerHTML = revs.map(v=>{
+      const canReport = !currentUser || v.uid!==currentUser.uid;
+      const rep = canReport
+        ? `<button class="rep-btn" data-report="${v.id}" title="후기 신고" aria-label="이 후기 신고">🚩</button>` : "";
+      return `<li><div class="meta"><b>${esc(mask(nameOf(v.uid, v.name)))}</b> · ${fmtDate(v.date)}${rep}</div>
+       <div class="txt">${esc(v.review)}</div></li>`;
+    }).join("");
   }else{
     revUl.innerHTML = `<li class="emptynote">${
       currentMonth ? `${currentMonth}월의 후기가 아직 없어요. 첫 후기를 남겨보세요!`
@@ -1277,6 +1464,24 @@ document.getElementById("chartWrap").addEventListener("click",e=>{
   setMonth(currentMonth===m ? null : m);
 });
 
+async function reportVisit(visitId){
+  if(!currentUser){ openAuth(); return; }
+  if(!confirm("이 후기를 신고할까요? 운영자가 확인 후 조치해요.")) return;
+  if(DEMO){ toast("신고가 접수됐어요. 확인 후 조치할게요."); return; }
+  try{
+    // 문서 ID를 {visitId}_{내 uid}로 고정 → 같은 후기 중복 신고는 규칙(create-only)이 차단
+    await fb.setDoc(fb.doc(fb.db,"reports", visitId+"_"+currentUser.uid),
+      {visitId, reporterUid: currentUser.uid, createdAt: fb.serverTimestamp()});
+    toast("신고가 접수됐어요. 확인 후 조치할게요.");
+  }catch(e){
+    if(e.code==="permission-denied") toast("이미 신고한 후기예요.");
+    else{ console.error(e); toast("신고 접수에 실패했어요. 잠시 후 다시 시도해 주세요."); }
+  }
+}
+document.getElementById("panelReviews").addEventListener("click",e=>{
+  const btn = e.target.closest("[data-report]"); if(!btn) return;
+  reportVisit(btn.dataset.report);
+});
 document.getElementById("myTrips").addEventListener("click",e=>{
   const del = e.target.closest("[data-del]");
   if(del){ if(confirm("이 방문 기록을 삭제할까요?")) removeVisit(del.dataset.del); return; }
@@ -1352,6 +1557,39 @@ function setupOverlay(overlay, closeFn){
 }
 setupOverlay(journalOverlay, closeJournal);
 
+// 모달 접근성: 열 때 포커스 이동, Tab 순환(포커스 트랩), 닫을 때 원래 자리로 복귀
+const FOCUSABLE = 'button,input,textarea,select,a[href],[tabindex]:not([tabindex="-1"])';
+function focusablesIn(root){
+  return [...root.querySelectorAll(FOCUSABLE)]
+    .filter(el=>!el.disabled && el.offsetParent!==null);
+}
+function modalOpened(overlay){
+  overlay._prevFocus = document.activeElement;
+  const dlg = overlay.querySelector(".modal");
+  // 입력형 모달은 첫 입력칸으로, 그 외에는 다이얼로그 자체로 포커스
+  const firstInput = [...overlay.querySelectorAll("input,textarea")]
+    .find(el=>!el.disabled && el.offsetParent!==null);
+  (firstInput || dlg)?.focus();
+}
+function modalClosed(overlay){
+  const p = overlay._prevFocus; overlay._prevFocus = null;
+  if(p && document.contains(p) && typeof p.focus==="function") p.focus();
+}
+function trapFocus(overlay){
+  overlay.addEventListener("keydown", e=>{
+    if(e.key!=="Tab") return;
+    const els = focusablesIn(overlay);
+    if(!els.length){ e.preventDefault(); return; }
+    const first = els[0], last = els[els.length-1];
+    const active = document.activeElement;
+    if(e.shiftKey && (active===first || !overlay.contains(active))){
+      e.preventDefault(); last.focus();
+    }else if(!e.shiftKey && (active===last || !overlay.contains(active))){
+      e.preventDefault(); first.focus();
+    }
+  });
+}
+
 /* ══════════════════════════════════════════════════════════════
    11) 방문 기록 모달 (신규/수정)
 ══════════════════════════════════════════════════════════════ */
@@ -1378,9 +1616,10 @@ function openVisitModal(editVisit){
   document.getElementById("reviewLen").textContent = visitReview.value.length;
   document.getElementById("visitErr").textContent = "";
   visitOverlay.classList.add("open");
+  modalOpened(visitOverlay);
   visitDate.focus();
 }
-function closeVisitModal(){ visitOverlay.classList.remove("open"); editingVisit=null; }
+function closeVisitModal(){ visitOverlay.classList.remove("open"); modalClosed(visitOverlay); editingVisit=null; }
 document.getElementById("visitBtn").onclick = ()=>openVisitModal();
 document.getElementById("visitCancel").onclick = closeVisitModal;
 setupOverlay(visitOverlay, closeVisitModal);
@@ -1460,7 +1699,7 @@ document.addEventListener("click",e=>{
 ══════════════════════════════════════════════════════════════ */
 const rankOverlay = document.getElementById("rankOverlay");
 let rankTab = "cities";
-function openRank(){ renderRank(); rankOverlay.classList.add("open"); }
+function openRank(){ renderRank(); rankOverlay.classList.add("open"); modalOpened(rankOverlay); }
 function renderRank(){
   document.querySelectorAll("#rankTabs .tab").forEach(t=>
     t.classList.toggle("on", t.dataset.tab===rankTab));
@@ -1526,7 +1765,7 @@ document.getElementById("rankList").addEventListener("click",e=>{
   const li = e.target.closest("li.city"); if(!li) return;
   closeRank(); openCity(li.dataset.id);
 });
-function closeRank(){ rankOverlay.classList.remove("open"); }
+function closeRank(){ rankOverlay.classList.remove("open"); modalClosed(rankOverlay); }
 document.getElementById("rankBtn").onclick = openRank;
 document.getElementById("rankClose").onclick = closeRank;
 setupOverlay(rankOverlay, closeRank);
@@ -1543,9 +1782,10 @@ function openProfile(firstTime){
   document.getElementById("profileNick").value = usersMap[currentUser?.uid] || "";
   document.getElementById("profileErr").textContent = "";
   profileOverlay.classList.add("open");
+  modalOpened(profileOverlay);
   document.getElementById("profileNick").focus();
 }
-function closeProfile(){ profileOverlay.classList.remove("open"); }
+function closeProfile(){ profileOverlay.classList.remove("open"); modalClosed(profileOverlay); }
 document.getElementById("profileCancel").onclick = closeProfile;
 setupOverlay(profileOverlay, closeProfile);
 document.getElementById("profileSave").onclick = async ()=>{
@@ -1564,8 +1804,8 @@ document.getElementById("profileSave").onclick = async ()=>{
 ══════════════════════════════════════════════════════════════ */
 const authOverlay = document.getElementById("authOverlay");
 let signupMode = false;
-function openAuth(){ authOverlay.classList.add("open"); setAuthMsg(""); }
-function closeAuth(){ authOverlay.classList.remove("open"); }
+function openAuth(){ authOverlay.classList.add("open"); setAuthMsg(""); modalOpened(authOverlay); }
+function closeAuth(){ authOverlay.classList.remove("open"); modalClosed(authOverlay); }
 function setAuthMsg(msg, ok){
   const el = document.getElementById("authErr");
   el.textContent = msg; el.classList.toggle("ok", !!ok);
@@ -1700,9 +1940,11 @@ function renderStats(){
       currentUser ? `${fv.filter(v=>v.uid===currentUser.uid).length}회` : "–";
   }
 }
+[authOverlay, visitOverlay, profileOverlay, rankOverlay, journalOverlay, myMapOverlay].forEach(trapFocus);
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
-  if(visitOverlay.classList.contains("open")) closeVisitModal();
+  if(myMapOverlay.classList.contains("open")) closeMyMap();
+  else if(visitOverlay.classList.contains("open")) closeVisitModal();
   else if(profileOverlay.classList.contains("open")) closeProfile();
   else if(rankOverlay.classList.contains("open")) closeRank();
   else if(journalOverlay.classList.contains("open")) closeJournal();
