@@ -222,6 +222,30 @@
     transition:opacity .15s;
   }
   .rep-btn:hover,.rep-btn:focus-visible{opacity:1;color:var(--amber);}
+  /* ── 사진 더 보기 (도시 갤러리) ── */
+  .morephotos-btn{margin:10px 0 2px;padding:9px 14px;font-size:13px;}
+  .photostrip{display:none;gap:8px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:thin;}
+  .photostrip.open{display:flex}
+  .photostrip img{height:96px;border-radius:10px;cursor:pointer;flex:none;
+    border:1px solid var(--line);background:var(--panel-2);}
+  .lightbox{position:fixed;inset:0;z-index:2600;background:rgba(3,6,13,.93);
+    display:none;align-items:center;justify-content:center;}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:92vw;max-height:80vh;border-radius:12px;box-shadow:var(--shadow);}
+  .lightbox .lb-btn{
+    position:fixed;background:rgba(17,27,44,.85);border:1px solid var(--line);color:var(--paper);
+    border-radius:999px;cursor:pointer;font-size:18px;width:44px;height:44px;line-height:1;
+  }
+  .lightbox .lb-close{top:16px;right:16px;}
+  .lightbox .lb-prev{left:12px;top:50%;transform:translateY(-50%);}
+  .lightbox .lb-next{right:12px;top:50%;transform:translateY(-50%);}
+  .lightbox .lb-btn:disabled{opacity:.3;cursor:default;}
+  .lightbox .lb-credit{
+    position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+    font-size:12px;color:var(--muted);background:rgba(17,27,44,.8);
+    padding:6px 14px;border-radius:999px;border:1px solid var(--line);
+  }
+  .lightbox .lb-credit a{color:var(--muted);}
   .reviews .txt{font-size:13.5px;line-height:1.6;}
   .emptynote{font-size:13px;color:var(--muted);padding:8px 0;line-height:1.6;}
   .panel-actions{padding:14px 20px 20px;flex-shrink:0;border-top:1px solid var(--line);}
@@ -481,6 +505,8 @@
   <div class="panel-body">
     <div class="visitline"><b id="panelCount">0</b><span id="panelCountLabel">번의 여행이 이곳에 닿았어요</span></div>
     <p class="desc" id="panelDesc"></p>
+    <button class="btn morephotos-btn" id="morePhotosBtn">📷 사진 더 보기</button>
+    <div class="photostrip" id="photoStrip" role="list" aria-label="도시 사진"></div>
     <h3>여행하기 좋은 시기</h3>
     <div class="chartwrap" id="chartWrap"></div>
     <h3>주요 관광지</h3>
@@ -605,6 +631,15 @@
       <button class="btn alt" id="cardCloseBtn">닫기</button>
     </div>
   </div>
+</div>
+
+<!-- 사진 라이트박스 -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="사진 크게 보기">
+  <img id="lbImg" alt="" />
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="이전 사진">‹</button>
+  <button class="lb-btn lb-next" id="lbNext" aria-label="다음 사진">›</button>
+  <button class="lb-btn lb-close" id="lbClose" aria-label="닫기">✕</button>
+  <div class="lb-credit">사진: 위키백과 · <a id="lbSrc" href="#" target="_blank" rel="noopener">원본 보기</a></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1587,6 +1622,7 @@ async function openCity(id){
   const noimg = document.getElementById("panelNoimg");
   const note = document.getElementById("wikiNote");
   photoBox.querySelector("img")?.remove(); noimg.style.display="flex"; note.textContent="";
+  resetPhotoStrip();
   panel.classList.add("open");
   map.flyTo([city.lat,city.lng], Math.max(map.getZoom(),5), {duration:.8});
   try{
@@ -1620,6 +1656,108 @@ async function openCity(id){
     if(w.extract) document.getElementById("panelDesc").textContent = w.extract;
   }catch(e){ /* 사진 없이 진행 */ }
 }
+
+/* ── 사진 더 보기: 위키백과 문서에 실린 사진 갤러리 ──
+   좌표 검색(Commons geosearch)은 품질 검증 실패로 배제 — 문서 사진(편집자 큐레이션)만 사용 */
+const photoCache = {};
+const PHOTO_BAD = /(map|locator|flag|seal|emblem|coat_of|logo|montage|chart|diagram|plan|banner)/;
+async function loadCityPhotos(id){
+  if(photoCache[id]) return photoCache[id];
+  const city = CITY_MAP[id];
+  const out = [], seen = new Set();
+  async function pull(lang, title){
+    try{
+      const res = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/media-list/${encodeURIComponent(title)}`);
+      if(!res.ok) return;
+      const items = (await res.json()).items || [];
+      items.forEach(it=>{
+        if(it.type!=="image") return;
+        let src = it.srcset?.[0]?.src; if(!src) return;
+        const low = (it.title||"").toLowerCase();
+        if(!/\.(jpe?g|webp)$/.test(low) || PHOTO_BAD.test(low) || seen.has(it.title)) return;
+        seen.add(it.title);
+        if(src.startsWith("//")) src = "https:" + src;
+        out.push({
+          thumb: src,
+          big: src.replace(/\/\d+px-/, "/1280px-"),
+          page: "https://commons.wikimedia.org/wiki/" + encodeURIComponent(it.title),
+          alt: it.title.replace(/^(File:|파일:)/,"").replace(/\.[a-z]+$/i,"").replace(/_/g," ")
+        });
+      });
+    }catch(e){ /* 사진 없이 진행 */ }
+  }
+  await pull("ko", city.w);
+  // 한국어 문서 사진이 적으면 영문 문서 폴백 (we 우선, 없으면 영문 검색어 e를 제목으로 시도 — 불일치 시 404 무시)
+  if(out.length < 3) await pull("en", city.we || city.e);
+  photoCache[id] = out.slice(0, 12);
+  return photoCache[id];
+}
+const morePhotosBtn = document.getElementById("morePhotosBtn");
+const photoStrip = document.getElementById("photoStrip");
+let stripCity = null;
+function resetPhotoStrip(){
+  photoStrip.classList.remove("open"); photoStrip.innerHTML = "";
+  stripCity = null;
+  morePhotosBtn.textContent = "📷 사진 더 보기"; morePhotosBtn.disabled = false;
+}
+morePhotosBtn.onclick = async ()=>{
+  const id = openedCity; if(!id) return;
+  if(photoStrip.classList.contains("open") && stripCity===id){ // 토글 접기
+    photoStrip.classList.remove("open");
+    morePhotosBtn.textContent = "📷 사진 더 보기"; return;
+  }
+  if(stripCity===id){ // 이미 로드됨 → 다시 펼치기
+    photoStrip.classList.add("open");
+    morePhotosBtn.textContent = "📷 사진 접기"; return;
+  }
+  morePhotosBtn.disabled = true; morePhotosBtn.textContent = "사진을 불러오는 중…";
+  const photos = await loadCityPhotos(id);
+  if(openedCity!==id) return; // 로딩 중 도시 전환 가드
+  morePhotosBtn.disabled = false;
+  if(!photos.length){
+    morePhotosBtn.textContent = "📷 사진 더 보기";
+    toast("더 보여드릴 사진을 찾지 못했어요"); return;
+  }
+  photoStrip.innerHTML = photos.map((p,i)=>
+    `<img src="${p.thumb}" loading="lazy" alt="${esc(p.alt)}" data-i="${i}" role="listitem">`).join("");
+  photoStrip.classList.add("open");
+  stripCity = id;
+  morePhotosBtn.textContent = "📷 사진 접기";
+};
+photoStrip.addEventListener("click", e=>{
+  const img = e.target.closest("img[data-i]"); if(!img) return;
+  openLightbox(photoCache[stripCity]||[], +img.dataset.i);
+});
+
+// ── 라이트박스
+const lightbox = document.getElementById("lightbox");
+const lbImg = document.getElementById("lbImg");
+let lbList = [], lbIdx = 0;
+function lbRender(){
+  const p = lbList[lbIdx]; if(!p) return;
+  lbImg.src = p.big; lbImg.alt = p.alt;
+  lbImg.onerror = ()=>{ lbImg.onerror = null; lbImg.src = p.thumb; }; // 1280px 변환 실패 시 원 썸네일
+  document.getElementById("lbSrc").href = p.page;
+  document.getElementById("lbPrev").disabled = lbIdx===0;
+  document.getElementById("lbNext").disabled = lbIdx===lbList.length-1;
+}
+function openLightbox(list, i){
+  if(!list.length) return;
+  lbList = list; lbIdx = i;
+  lightbox._prevFocus = document.activeElement;
+  lbRender();
+  lightbox.classList.add("open");
+  document.getElementById("lbClose").focus();
+}
+function closeLightbox(){
+  lightbox.classList.remove("open"); lbImg.src = "";
+  const pf = lightbox._prevFocus; lightbox._prevFocus = null;
+  if(pf && document.contains(pf)) pf.focus();
+}
+document.getElementById("lbClose").onclick = closeLightbox;
+document.getElementById("lbPrev").onclick = ()=>{ if(lbIdx>0){ lbIdx--; lbRender(); } };
+document.getElementById("lbNext").onclick = ()=>{ if(lbIdx<lbList.length-1){ lbIdx++; lbRender(); } };
+lightbox.addEventListener("click", e=>{ if(e.target===lightbox) closeLightbox(); });
 
 function renderCityDynamic(id){
   const count = visitCounts[id]||0;
@@ -1689,7 +1827,7 @@ function renderMonthChart(id){
     }).join("") +
     `</div><div class="bar-labels">` +
     Array.from({length:12},(_,i)=>`<span>${i+1}</span>`).join("") +
-    `</div><div class="chart-note">여행자들은 <b>${bestMonths.join("·")}월</b>에 이곳을 가장 많이 찾았어요. (총 ${total}회 기준 · 막대를 누르면 그 달만 볼 수 있어요)</div>`;
+    `</div><div class="chart-note">여행자들은 <b>${bestMonths.join("·")}월</b>에 이곳을 가장 많이 찾았어요. (그래프를 누르면 그 달의 여행 지도를 볼 수 있어요)</div>`;
 }
 document.getElementById("chartWrap").addEventListener("click",e=>{
   const bar = e.target.closest(".bar"); if(!bar) return;
@@ -2183,10 +2321,16 @@ function renderStats(){
       currentUser ? `${fv.filter(v=>v.uid===currentUser.uid).length}회` : "–";
   }
 }
-[authOverlay, visitOverlay, profileOverlay, rankOverlay, journalOverlay, myMapOverlay, cardOverlay].forEach(trapFocus);
+[authOverlay, visitOverlay, profileOverlay, rankOverlay, journalOverlay, myMapOverlay, cardOverlay, lightbox].forEach(trapFocus);
+document.addEventListener("keydown", e=>{
+  if(!lightbox.classList.contains("open")) return;
+  if(e.key==="ArrowLeft") document.getElementById("lbPrev").click();
+  else if(e.key==="ArrowRight") document.getElementById("lbNext").click();
+});
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
-  if(cardOverlay.classList.contains("open")) closeTripCard();
+  if(lightbox.classList.contains("open")) closeLightbox();
+  else if(cardOverlay.classList.contains("open")) closeTripCard();
   else if(myMapOverlay.classList.contains("open")) closeMyMap();
   else if(visitOverlay.classList.contains("open")) closeVisitModal();
   else if(profileOverlay.classList.contains("open")) closeProfile();
