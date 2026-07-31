@@ -415,6 +415,7 @@
   .rank-list .nm small{color:var(--teal);margin-left:6px;}
   .rank-list .ct{color:var(--muted);font-size:12.5px;text-align:right;flex-shrink:0;line-height:1.4;}
   .rank-list .ct b{color:var(--amber);font-size:15px;font-variant-numeric:tabular-nums;}
+  .rank-note{font-size:11.5px;color:var(--muted);opacity:.8;text-align:center;margin-top:10px;}
 
   /* ── 여행 일지 ───────────────────────── */
   .journal{list-style:none;}
@@ -679,10 +680,12 @@
     <h2 id="rankTitle">🏆 모두의 TOP 10</h2>
     <div class="tabs" id="rankTabs">
       <button class="tab on" data-tab="cities">인기 여행지</button>
+      <button class="tab" data-tab="wishes">위시리스트</button>
       <button class="tab" data-tab="users">여행자 랭킹</button>
     </div>
     <p class="sub" id="rankSub"></p>
     <ol class="rank-list" id="rankList"></ol>
+    <p class="rank-note" id="rankNote" style="display:none"></p>
     <button class="btn alt" id="rankClose">닫기</button>
   </div>
 </div>
@@ -2314,6 +2317,8 @@ function renderRank(){
     t.classList.toggle("on", t.dataset.tab===rankTab));
   const list = document.getElementById("rankList");
   const sub = document.getElementById("rankSub");
+  const note = document.getElementById("rankNote");
+  note.style.display = "none";
   if(rankTab==="cities"){
     // ── 인기 여행지 TOP 10 (월 필터 연동) ──
     sub.textContent = currentMonth
@@ -2336,9 +2341,38 @@ function renderRank(){
         <span class="nm">${esc(c.n)}<span class="co"> · ${esc(c.c)}</span>${mine}</span>
         <span class="ct"><b>${cnt}</b>회</span></li>`;
     }).join("");
+  }else if(rankTab==="wishes"){
+    // ── 위시리스트 TOP 10 (전체 기간 — 위시는 시간 무관) ──
+    sub.textContent = "여행자들이 가장 가고 싶어 하는 곳이에요. 눌러서 구경해 보세요!";
+    note.textContent = "위시리스트는 전체 기간 기준으로 집계합니다";
+    note.style.display = "";
+    const byCity = {};
+    allWishes.forEach(w=>{ byCity[w.cityId] = (byCity[w.cityId]||0)+1; });
+    const rows = Object.entries(byCity)
+      .sort((a,b)=>b[1]-a[1] || CITY_MAP[a[0]].n.localeCompare(CITY_MAP[b[0]].n, "ko"))
+      .slice(0,10);
+    if(!rows.length){
+      list.innerHTML = `<li class="emptynote">아직 위시리스트가 없어요. 도시를 위시리스트에 추가해보세요!</li>`;
+      return;
+    }
+    const max = rows[0][1];
+    const myWish = myWishSet();
+    list.innerHTML = rows.map(([id,cnt],i)=>{
+      const c = CITY_MAP[id];
+      const pct = Math.max(4, Math.round(cnt/max*100));
+      const mine = myWish.has(id) ? ' <small>✓ 나</small>' : '';
+      // 위시 랭킹의 게이지는 amber(불빛) 대신 흐린 paper — "아직 켜지지 않은 곳"의 랭킹
+      return `<li class="city" data-id="${id}"
+        style="background:linear-gradient(90deg, rgba(242,236,223,.10) ${pct}%, transparent ${pct}%)">
+        <span class="no">${i+1}</span>
+        <span class="nm">${esc(c.n)}<span class="co"> · ${esc(c.c)}</span>${mine}</span>
+        <span class="ct"><b>${cnt}</b>명</span></li>`;
+    }).join("");
   }else{
     // ── 여행자 랭킹 TOP 10 (전체 기간) ──
     sub.textContent = "가장 많은 여행을 공유한 여행자들이에요.";
+    note.textContent = "여행자 랭킹은 전체 기간 기준으로 집계합니다";
+    note.style.display = "";
     const byUser = {};
     allVisits.forEach(v=>{
       (byUser[v.uid] ??= {fallback:v.name, count:0, cities:new Set()});
