@@ -34,7 +34,7 @@
     --teal:#59dcc9;         /* 나의 여행 기록 */
     --teal-soft:rgba(89,220,201,.15);
     --paper:#f2ecdf;        /* 따뜻한 흰색 */
-    --moon:#8ea7e9;         /* 잠든 도시의 달빛 (미방문 마커) */
+    --moon:#8ea7e9;         /* 잠든 도시의 달빛 — 마커는 Leaflet 특성상 JS 리터럴(#8ea7e9) 사용, 이 토큰은 팔레트 기준값 */
     --moon-soft:rgba(142,167,233,.14);
     --muted:rgba(242,236,223,.62);
     --shadow:0 18px 50px rgba(0,0,0,.45);
@@ -231,7 +231,7 @@
     font-size:11.5px;line-height:1;height:17px;color:var(--muted);opacity:.65;padding:2px 5px;border-radius:6px;
     display:inline-flex;align-items:center;gap:3px;transition:opacity .15s,color .15s;
   }
-  .rep-btn + .like-btn,.rep-btn + .like-btn.static{margin-left:0;}
+  .rep-btn + .like-btn{margin-left:0;}
   .like-btn:hover,.like-btn:focus-visible{opacity:1;color:#ff8ba0;}
   .like-btn.on{opacity:1;color:#ff8ba0;}
   .like-btn.static{cursor:default;}
