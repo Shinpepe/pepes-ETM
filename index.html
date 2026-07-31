@@ -34,6 +34,8 @@
     --teal:#59dcc9;         /* 나의 여행 기록 */
     --teal-soft:rgba(89,220,201,.15);
     --paper:#f2ecdf;        /* 따뜻한 흰색 */
+    --moon:#8ea7e9;         /* 잠든 도시의 달빛 (미방문 마커) */
+    --moon-soft:rgba(142,167,233,.14);
     --muted:rgba(242,236,223,.62);
     --shadow:0 18px 50px rgba(0,0,0,.45);
     --radius:16px;
@@ -222,6 +224,44 @@
     transition:opacity .15s;
   }
   .rep-btn:hover,.rep-btn:focus-visible{opacity:1;color:var(--amber);}
+  /* 후기 공감 (하트 토글) — 신고 버튼 오른쪽 */
+  .like-btn{
+    margin-left:auto;background:none;border:none;cursor:pointer;
+    font-size:11.5px;color:var(--muted);opacity:.65;padding:2px 5px;border-radius:6px;
+    display:inline-flex;align-items:center;gap:3px;transition:opacity .15s,color .15s;
+  }
+  .rep-btn + .like-btn,.rep-btn + .like-btn.static{margin-left:0;}
+  .like-btn:hover,.like-btn:focus-visible{opacity:1;color:#ff8ba0;}
+  .like-btn.on{opacity:1;color:#ff8ba0;}
+  .like-btn.static{cursor:default;}
+  .like-btn.static:hover{color:var(--muted);opacity:.65;}
+  /* 위시리스트 별 버튼 (도시 패널) — 링크 공유 버튼과 동일한 기본 .btn 스타일 */
+  #wishBtn{flex-shrink:0;width:52px;display:inline-flex;align-items:center;justify-content:center;}
+  #wishBtn svg{width:20px;height:20px;display:block;}
+  /* 후기 정렬 (최신순 / 공감순) */
+  .rev-head{display:flex;align-items:baseline;}
+  .rev-sort{margin-left:auto;display:flex;gap:2px;align-items:center;letter-spacing:0;text-transform:none;}
+  .rev-sort .rs{background:none;border:none;cursor:pointer;font-family:var(--body);
+    font-size:12px;color:var(--muted);padding:2px 4px;border-radius:6px;transition:color .15s;}
+  .rev-sort .rs.on{color:var(--amber);font-weight:600;}
+  .rev-sort .rs:hover,.rev-sort .rs:focus-visible{color:var(--paper);}
+  .rev-sort .rs.on:hover{color:var(--amber);}
+  .rev-sort .sep{color:var(--muted);opacity:.4;font-size:11px;}
+  /* 지도 위 위시리스트 별 마커 */
+  .wish-star{width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .wish-star svg{width:22px;height:22px;overflow:visible;animation:twinkle 2.8s ease-in-out infinite;animation-delay:var(--tw-delay,0s);}
+  @keyframes twinkle{0%,100%{opacity:.95}50%{opacity:.45}}
+  /* 여행 위시리스트 목록 */
+  .wishhead{font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:6px;}
+  .wishlist{list-style:none;max-height:280px;overflow-y:auto;scrollbar-width:thin;}
+  .wishlist li{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid rgba(242,236,223,.08);cursor:pointer;}
+  .wishlist li:last-child{border-bottom:none;}
+  .wishlist svg{width:14px;height:14px;flex-shrink:0;}
+  .wishlist .wname{flex:1;font-size:13.5px;}
+  .wishlist .wname small{color:var(--muted);font-size:12px;margin-left:4px;}
+  .wishlist .wdel{background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;padding:4px 6px;font-family:var(--body);}
+  .wishlist .wdel:hover{color:var(--paper);}
+  .wishhint{font-size:12px;color:var(--muted);opacity:.75;margin-top:10px;}
   /* ── 사진 더 보기 (도시 갤러리) ── */
   .morephotos-btn{margin:10px 0 2px;padding:9px 14px;font-size:13px;}
   .photostrip{display:none;gap:8px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:thin;}
@@ -515,13 +555,20 @@
       <h3>나의 여행 기록</h3>
       <ul class="mytrips" id="myTrips"></ul>
     </div>
-    <h3>여행자의 한 줄</h3>
+    <h3 class="rev-head">여행자의 한 줄
+      <span class="rev-sort" id="revSort" role="group" aria-label="후기 정렬">
+        <button class="rs on" data-sort="date" aria-pressed="true">최신순</button>
+        <span class="sep" aria-hidden="true">·</span>
+        <button class="rs" data-sort="likes" aria-pressed="false">공감순</button>
+      </span>
+    </h3>
     <ul class="reviews" id="panelReviews"></ul>
     <div class="wikinote" id="wikiNote"></div>
   </div>
   <div class="panel-actions">
     <div class="action-row">
       <button class="btn primary" id="visitBtn">🧳 나도 다녀왔어요</button>
+      <button class="btn" id="wishBtn" title="위시리스트 추가" aria-label="위시리스트 추가"></button>
       <button class="btn" id="shareBtn" title="이 도시 링크 공유" aria-label="이 도시 링크 공유">🔗</button>
     </div>
   </div>
@@ -568,11 +615,22 @@
 <div class="overlay" id="profileOverlay">
   <div class="modal" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="profileTitle">
     <h2 id="profileTitle">닉네임 설정</h2>
-    <p class="sub">랭킹에는 닉네임 전체가, 후기에는 앞 3자만 표시돼요. (예: shin0504 → shi*****)<br/>2~20자 · 한글/영문/숫자/-/_ · 다른 여행자와 중복될 수 없어요.</p>
-    <label for="profileNick">닉네임 (2~20자)</label>
-    <input id="profileNick" type="text" maxlength="20" placeholder="예: 방랑자무민" />
-    <button class="btn primary" id="profileSave">저장</button>
-    <div class="err" id="profileErr"></div>
+    <div class="tabs" id="profileTabs" style="display:none">
+      <button class="tab on" data-ptab="profile">프로필</button>
+      <button class="tab" data-ptab="wish">여행 위시리스트</button>
+    </div>
+    <div id="profilePane">
+      <p class="sub">랭킹에는 닉네임 전체가, 후기에는 닉네임 일부가 표시됩니다.<br/>닉네임은 한글/영문/숫자/-/_ 입력이 가능하며 중복될 수 없습니다.</p>
+      <label for="profileNick">닉네임 (2~20자)</label>
+      <input id="profileNick" type="text" maxlength="20" placeholder="예: 방랑자무민" />
+      <button class="btn primary" id="profileSave">저장</button>
+      <div class="err" id="profileErr"></div>
+    </div>
+    <div id="wishPane" style="display:none">
+      <div class="wishhead" id="wishHead">가고 싶은 도시 0</div>
+      <ul class="wishlist" id="wishList"></ul>
+      <div class="wishhint" id="wishHint">도시를 탭하면 지도의 해당 도시로 날아가요</div>
+    </div>
     <button class="btn alt" id="profileCancel">나중에 할게요</button>
   </div>
 </div>
@@ -848,7 +906,16 @@ let currentMonth = null;    // null=전체, 1~12
 let myMode = false;         // 내 여행 모드
 let visitCounts = {};       // (필터 적용) cityId -> 전체 count
 let myCounts = {};          // (필터 적용) cityId -> 내 count
-let unsubVisits = null, unsubUsers = null;
+let unsubVisits = null, unsubUsers = null, unsubWishes = null, unsubLikes = null;
+let allWishes = [];         // [{uid, cityId}] — 문서 ID {uid}_{cityId}
+let likesByVisit = {};      // visitId -> [uid, ...] — 문서 ID {visitId}_{uid}
+function myWishSet(){
+  if(!currentUser) return new Set();
+  return new Set(allWishes.filter(w=>w.uid===currentUser.uid).map(w=>w.cityId));
+}
+function iLiked(visitId){
+  return !!(currentUser && (likesByVisit[visitId]||[]).includes(currentUser.uid));
+}
 let dataLoaded = false, usersLoaded = false;
 let nickPrompted = false;
 
@@ -937,6 +1004,23 @@ async function initFirebase(){
     console.error(err);
     toast("데이터를 불러오지 못했어요. Firestore 규칙을 확인해 주세요.");
   });
+  unsubWishes = fb.onSnapshot(fb.collection(fb.db,"wishes"), snap=>{
+    allWishes = [];
+    snap.forEach(d=>{
+      const v = d.data();
+      if(typeof v.uid==="string" && CITY_MAP[v.cityId]) allWishes.push({uid:v.uid, cityId:v.cityId});
+    });
+    drawMarkers(); updateWishBtn(); renderWishPane();
+  }, err=>console.error("wishes:",err));
+  unsubLikes = fb.onSnapshot(fb.collection(fb.db,"likes"), snap=>{
+    likesByVisit = {};
+    snap.forEach(d=>{
+      const v = d.data();
+      if(typeof v.visitId!=="string" || typeof v.uid!=="string") return;
+      (likesByVisit[v.visitId] = likesByVisit[v.visitId] || []).push(v.uid);
+    });
+    if(openedCity) renderCityDynamic(openedCity);
+  }, err=>console.error("likes:",err));
 }
 function myNickname(){
   if(!currentUser) return "여행자";
@@ -1018,7 +1102,7 @@ function recompute(){
       myCounts[v.cityId] = (myCounts[v.cityId]||0)+1;
   });
   drawMarkers(); renderStats();
-  if(openedCity) renderCityDynamic(openedCity);
+  if(openedCity){ renderCityDynamic(openedCity); updateWishBtn(); }
 }
 
 async function saveVisit(cityId, date, review, editId){
@@ -1090,9 +1174,25 @@ map.on("zoomend", ()=>{
 function drawMarkers(){
   markerLayer.clearLayers();
   const f = zoomScale();
+  const wishes = myWishSet();
+  let starIdx = 0;
   CITIES.forEach(city=>{
     const total = visitCounts[city.id]||0;
     const mine = myCounts[city.id]||0;
+    const wished = wishes.has(city.id);
+    // 기록이 없는 위시리스트 도시는 원 대신 별로 (기록이 생기면 불빛이 우선)
+    const noRecord = myMode ? !mine : !total;
+    if(wished && noRecord){
+      const icon = L.divIcon({className:"", iconSize:[26,26], iconAnchor:[13,13],
+        html:`<div class="wish-star" style="--tw-delay:${(starIdx++%3)*0.9}s">`+
+             `<svg viewBox="-11 -11 22 22"><circle r="10" fill="none" stroke="#f2ecdf" stroke-opacity=".25" stroke-width="1"/>`+
+             `<polygon points="0,-8 2.3,-2.3 8,0 2.3,2.3 0,8 -2.3,2.3 -8,0 -2.3,-2.3" fill="#f2ecdf"/></svg></div>`});
+      const sm = L.marker([city.lat,city.lng],{icon});
+      sm.bindTooltip(`${city.n} · 위시리스트`,{direction:"top", className:"city-tip", offset:[0,-10]});
+      sm.on("click",()=>openCity(city.id));
+      sm.addTo(markerLayer);
+      return;
+    }
     let baseR, opt, tip;
     if(myMode){
       if(mine){
@@ -1101,17 +1201,22 @@ function drawMarkers(){
                fillColor:"#59dcc9", fillOpacity:.5, opacity:.95};
         tip = `${city.n} · 나의 여행 ${mine}회`;
       }else{
-        baseR = 3;
-        opt = {color:"#f2ecdf", weight:1,
-               fillColor:"#f2ecdf", fillOpacity:.06, opacity:.18};
+        // 잠든 도시: 달빛 (전체 모드와 통일 — 지명 텍스트와 색 계열이 달라 구분·클릭 용이)
+        baseR = 4.5;
+        opt = {color:"#8ea7e9", weight:1.5,
+               fillColor:"#8ea7e9", fillOpacity:.14, opacity:.75};
         tip = `${city.n} · 아직 여행 기록이 없어요`;
       }
-    }else{
+    }else if(total){
       baseR = radiusFor(total);
       opt = {color: mine ? "#59dcc9" : "#ffb65c", weight: mine ? 2.5 : 1.5,
-             fillColor:"#ffb65c", fillOpacity: total ? .55 : .15,
-             opacity: total ? .95 : .45};
+             fillColor:"#ffb65c", fillOpacity:.55, opacity:.95};
       tip = `${city.n} · ${total}회${mine?" · 나의 도시":""}`;
+    }else{
+      baseR = 4.5;
+      opt = {color:"#8ea7e9", weight:1.5,
+             fillColor:"#8ea7e9", fillOpacity:.14, opacity:.75};
+      tip = `${city.n} · 아직 여행 기록이 없어요`;
     }
     opt.radius = baseR * f;
     const m = L.circleMarker([city.lat,city.lng],opt);
@@ -1617,6 +1722,7 @@ async function openCity(id){
   document.getElementById("panelDesc").textContent = city.d;
   document.getElementById("panelSpots").innerHTML = city.s.map(s=>`<li>${esc(s)}</li>`).join("");
   renderCityDynamic(id);
+  updateWishBtn();
   panel.querySelector(".panel-body").scrollTop = 0; // 도시 전환 시 스크롤 초기화
   const photoBox = document.getElementById("panelPhoto");
   const noimg = document.getElementById("panelNoimg");
@@ -1784,16 +1890,25 @@ function renderCityDynamic(id){
 
   // 여행자의 한 줄 (월 필터 적용, 이름은 마스킹)
   const revUl = document.getElementById("panelReviews");
+  const byDate = (a,b)=>(b.date||"").localeCompare(a.date||"") || (b.ts-a.ts);
+  const byLikes = (a,b)=>
+    ((likesByVisit[b.id]||[]).length - (likesByVisit[a.id]||[]).length) || byDate(a,b);
   const revs = filteredVisits()
     .filter(v=>v.cityId===id && v.review.trim())
-    .sort((a,b)=>(b.date||"").localeCompare(a.date||"") || (b.ts-a.ts))
+    .sort(revSortMode==="likes" ? byLikes : byDate)
     .slice(0,6);
   if(revs.length){
     revUl.innerHTML = revs.map(v=>{
-      const canReport = !currentUser || v.uid!==currentUser.uid;
-      const rep = canReport
+      const isMine = currentUser && v.uid===currentUser.uid;
+      const rep = !isMine
         ? `<button class="rep-btn" data-report="${v.id}" title="후기 신고" aria-label="이 후기 신고">🚩</button>` : "";
-      return `<li><div class="meta"><b>${esc(mask(nameOf(v.uid, v.name)))}</b> · ${fmtDate(v.date)}${rep}</div>
+      const n = (likesByVisit[v.id]||[]).length;
+      const liked = iLiked(v.id);
+      // 본인 후기는 공감 수만 표시 (자기 공감 방지 — 규칙에서도 차단)
+      const like = isMine
+        ? (n ? `<span class="like-btn static" aria-label="공감 ${n}개">♥ ${n}</span>` : "")
+        : `<button class="like-btn${liked?" on":""}" data-like="${v.id}" title="${liked?"공감 취소":"공감"}" aria-label="이 후기에 공감">${liked?"♥":"♡"}${n?` ${n}`:""}</button>`;
+      return `<li><div class="meta"><b>${esc(mask(nameOf(v.uid, v.name)))}</b> · ${fmtDate(v.date)}${rep}${like}</div>
        <div class="txt">${esc(v.review)}</div></li>`;
     }).join("");
   }else{
@@ -1850,9 +1965,84 @@ async function reportVisit(visitId){
   }
 }
 document.getElementById("panelReviews").addEventListener("click",e=>{
-  const btn = e.target.closest("[data-report]"); if(!btn) return;
-  reportVisit(btn.dataset.report);
+  const rep = e.target.closest("[data-report]");
+  if(rep){ reportVisit(rep.dataset.report); return; }
+  const like = e.target.closest("[data-like]");
+  if(like) toggleLike(like.dataset.like);
 });
+
+// ── 후기 정렬 (최신순 / 공감순) ──
+let revSortMode = "date";
+document.getElementById("revSort").addEventListener("click",e=>{
+  const b = e.target.closest(".rs"); if(!b || b.dataset.sort===revSortMode) return;
+  revSortMode = b.dataset.sort;
+  document.querySelectorAll("#revSort .rs").forEach(x=>{
+    const on = x.dataset.sort===revSortMode;
+    x.classList.toggle("on", on);
+    x.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  if(openedCity) renderCityDynamic(openedCity);
+});
+
+// ── 후기 공감 (하트 토글) ──
+async function toggleLike(visitId){
+  if(!currentUser){ pendingAction = ()=>toggleLike(visitId); openAuth(); return; }
+  const v = allVisits.find(x=>x.id===visitId);
+  if(!v || v.uid===currentUser.uid) return;
+  const liked = iLiked(visitId);
+  if(DEMO){
+    const arr = likesByVisit[visitId] = likesByVisit[visitId] || [];
+    liked ? arr.splice(arr.indexOf(currentUser.uid),1) : arr.push(currentUser.uid);
+    if(openedCity) renderCityDynamic(openedCity);
+    return;
+  }
+  try{
+    // 문서 ID를 {visitId}_{내 uid}로 고정 → 중복 공감은 구조적으로 불가
+    const ref = fb.doc(fb.db,"likes", visitId+"_"+currentUser.uid);
+    if(liked) await fb.deleteDoc(ref);
+    else await fb.setDoc(ref,{visitId, uid:currentUser.uid, createdAt:fb.serverTimestamp()});
+  }catch(e){
+    console.error(e);
+    toast("잠시 후 다시 시도해 주세요.");
+  }
+}
+
+// ── 위시리스트 (도시 패널 별 토글) ──
+const WISH_STAR_OUTLINE =
+  `<svg viewBox="-8 -8 16 16" aria-hidden="true"><polygon points="0,-7 2,-2 7,0 2,2 0,7 -2,2 -7,0 -2,-2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`;
+const WISH_STAR_FILLED =
+  `<svg viewBox="-8 -8 16 16" aria-hidden="true"><polygon points="0,-7 2,-2 7,0 2,2 0,7 -2,2 -7,0 -2,-2" fill="currentColor"/></svg>`;
+const wishBtn = document.getElementById("wishBtn");
+function updateWishBtn(){
+  if(!openedCity) return;
+  const on = myWishSet().has(openedCity);
+  wishBtn.innerHTML = on ? WISH_STAR_FILLED : WISH_STAR_OUTLINE;
+  wishBtn.title = on ? "위시리스트에서 해제" : "위시리스트 추가";
+  wishBtn.setAttribute("aria-label", wishBtn.title);
+  wishBtn.setAttribute("aria-pressed", on ? "true" : "false");
+}
+async function toggleWish(cityId){
+  if(!currentUser){ pendingAction = ()=>toggleWish(cityId); openAuth(); return; }
+  const on = myWishSet().has(cityId);
+  if(DEMO){
+    if(on) allWishes = allWishes.filter(w=>!(w.uid===currentUser.uid && w.cityId===cityId));
+    else allWishes.push({uid:currentUser.uid, cityId});
+    drawMarkers(); updateWishBtn(); renderWishPane();
+    toast(on ? "위시리스트에서 해제했어요." : "위시리스트에 추가했어요.");
+    return;
+  }
+  try{
+    // 문서 ID를 {내 uid}_{cityId}로 고정 → 같은 도시 중복 추가는 구조적으로 불가
+    const ref = fb.doc(fb.db,"wishes", currentUser.uid+"_"+cityId);
+    if(on) await fb.deleteDoc(ref);
+    else await fb.setDoc(ref,{uid:currentUser.uid, cityId, createdAt:fb.serverTimestamp()});
+    toast(on ? "위시리스트에서 해제했어요." : "위시리스트에 추가했어요.");
+  }catch(e){
+    console.error(e);
+    toast("잠시 후 다시 시도해 주세요.");
+  }
+}
+wishBtn.onclick = ()=>{ if(openedCity) toggleWish(openedCity); };
 document.getElementById("myTrips").addEventListener("click",e=>{
   const del = e.target.closest("[data-del]");
   if(del){ if(confirm("이 방문 기록을 삭제할까요?")) removeVisit(del.dataset.del); return; }
@@ -2154,15 +2344,61 @@ setupOverlay(rankOverlay, closeRank);
 const profileOverlay = document.getElementById("profileOverlay");
 function openProfile(firstTime){
   document.getElementById("profileTitle").textContent =
-    firstTime ? "닉네임을 정해주세요" : "닉네임 변경";
+    firstTime ? "닉네임을 정해주세요" : "여행자 메뉴";
   document.getElementById("profileCancel").textContent =
     firstTime ? "나중에 할게요" : "닫기";
   document.getElementById("profileNick").value = usersMap[currentUser?.uid] || "";
   document.getElementById("profileErr").textContent = "";
+  // 첫 닉네임 설정 때는 탭 없이 프로필만 (설정에 집중)
+  document.getElementById("profileTabs").style.display = firstTime ? "none" : "flex";
+  setProfileTab("profile");
+  renderWishPane();
   profileOverlay.classList.add("open");
   modalOpened(profileOverlay);
   document.getElementById("profileNick").focus();
 }
+function setProfileTab(tab){
+  document.querySelectorAll("#profileTabs .tab").forEach(b=>
+    b.classList.toggle("on", b.dataset.ptab===tab));
+  document.getElementById("profilePane").style.display = tab==="profile" ? "" : "none";
+  document.getElementById("wishPane").style.display = tab==="wish" ? "" : "none";
+}
+document.getElementById("profileTabs").addEventListener("click",e=>{
+  const b = e.target.closest(".tab"); if(!b) return;
+  setProfileTab(b.dataset.ptab);
+});
+function renderWishPane(){
+  const listEl = document.getElementById("wishList");
+  const headEl = document.getElementById("wishHead");
+  const hintEl = document.getElementById("wishHint");
+  if(!listEl) return;
+  const ids = [...myWishSet()];
+  // 추가한 순서 유지를 위해 allWishes 순서 기준 정렬
+  ids.sort((a,b)=>{
+    const ia = allWishes.findIndex(w=>w.uid===currentUser?.uid && w.cityId===a);
+    const ib = allWishes.findIndex(w=>w.uid===currentUser?.uid && w.cityId===b);
+    return ia-ib;
+  });
+  headEl.textContent = `가고 싶은 도시 ${ids.length}`;
+  if(!ids.length){
+    listEl.innerHTML = `<li class="emptynote" style="cursor:default">아직 가고 싶은 도시가 없어요.<br/>지도에서 도시를 열고 별을 눌러 추가해보세요.</li>`;
+    hintEl.style.display = "none";
+    return;
+  }
+  hintEl.style.display = "";
+  const star = `<svg viewBox="-7 -7 14 14" aria-hidden="true"><polygon points="0,-6 1.7,-1.7 6,0 1.7,1.7 0,6 -1.7,1.7 -6,0 -1.7,-1.7" fill="var(--paper)"/></svg>`;
+  listEl.innerHTML = ids.map(id=>{
+    const c = CITY_MAP[id]; if(!c) return "";
+    return `<li data-wcity="${id}">${star}<span class="wname">${esc(c.n)}<small>${esc(c.c)}</small></span>`+
+           `<button class="wdel" data-wdel="${id}" aria-label="${esc(c.n)} 위시리스트에서 해제">해제</button></li>`;
+  }).join("");
+}
+document.getElementById("wishList").addEventListener("click",e=>{
+  const del = e.target.closest("[data-wdel]");
+  if(del){ toggleWish(del.dataset.wdel); return; }
+  const row = e.target.closest("[data-wcity]");
+  if(row){ closeProfile(); openCity(row.dataset.wcity); }
+});
 function closeProfile(){ profileOverlay.classList.remove("open"); modalClosed(profileOverlay); }
 document.getElementById("profileCancel").onclick = closeProfile;
 setupOverlay(profileOverlay, closeProfile);
