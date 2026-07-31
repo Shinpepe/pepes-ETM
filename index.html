@@ -264,6 +264,15 @@
   .wishlist .wdel{background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;padding:4px 6px;font-family:var(--body);}
   .wishlist .wdel:hover{color:var(--paper);}
   .wishhint{font-size:12px;color:var(--muted);opacity:.75;margin-top:10px;}
+  /* 회원 탈퇴 */
+  .withdraw-link{
+    display:block;margin:16px auto 0;background:none;border:none;cursor:pointer;
+    color:var(--muted);opacity:.6;font-size:12px;font-family:var(--body);
+    text-decoration:underline;padding:4px 8px;
+  }
+  .withdraw-link:hover,.withdraw-link:focus-visible{opacity:1;color:#ff8f8f;}
+  .btn.danger{background:rgba(255,143,143,.12);border-color:rgba(255,143,143,.5);color:#ff8f8f;}
+  .btn.danger:hover{background:rgba(255,143,143,.2);border-color:#ff8f8f;}
   /* ── 사진 더 보기 (도시 갤러리) ── */
   .morephotos-btn{margin:10px 0 2px;padding:9px 14px;font-size:13px;}
   .photostrip{display:none;gap:8px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:thin;}
@@ -629,6 +638,7 @@
       <input id="profileNick" type="text" maxlength="20" placeholder="예: 방랑자무민" />
       <button class="btn primary" id="profileSave">저장</button>
       <div class="err" id="profileErr"></div>
+      <button class="withdraw-link" id="withdrawLink">회원 탈퇴</button>
     </div>
     <div id="wishPane" style="display:none">
       <div class="wishhead" id="wishHead">가고 싶은 도시 0</div>
@@ -636,6 +646,21 @@
       <div class="wishhint" id="wishHint">도시를 탭하면 지도의 해당 도시로 날아가요</div>
     </div>
     <button class="btn alt" id="profileCancel">나중에 할게요</button>
+  </div>
+</div>
+
+<!-- 회원 탈퇴 확인 모달 -->
+<div class="overlay" id="withdrawOverlay">
+  <div class="modal" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="withdrawTitle">
+    <h2 id="withdrawTitle">회원 탈퇴</h2>
+    <p class="sub">탈퇴하면 계정과 함께 <b>모든 여행 기록·후기·위시리스트·공감</b>이 즉시 삭제되며, 되돌릴 수 없어요.</p>
+    <div id="withdrawPwWrap">
+      <label for="withdrawPw">비밀번호 확인</label>
+      <input id="withdrawPw" type="password" placeholder="현재 비밀번호" autocomplete="current-password" />
+    </div>
+    <button class="btn danger" id="withdrawConfirm">탈퇴하기</button>
+    <div class="err" id="withdrawErr"></div>
+    <button class="btn alt" id="withdrawCancel">돌아가기</button>
   </div>
 </div>
 
@@ -961,7 +986,7 @@ function makeDemoVisits(){
 async function initFirebase(){
   const [{initializeApp},
          {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,
-          sendPasswordResetEmail,signOut},
+          sendPasswordResetEmail,signOut,deleteUser,EmailAuthProvider,reauthenticateWithCredential},
          {getFirestore,collection,addDoc,updateDoc,deleteDoc,doc,setDoc,getDoc,writeBatch,onSnapshot,query,serverTimestamp}] = await Promise.all([
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"),
     import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"),
@@ -970,7 +995,7 @@ async function initFirebase(){
   const app = initializeApp(firebaseConfig);
   fb = {auth:getAuth(app), db:getFirestore(app),
     onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,
-    sendPasswordResetEmail,signOut,
+    sendPasswordResetEmail,signOut,deleteUser,EmailAuthProvider,reauthenticateWithCredential,
     collection,addDoc,updateDoc,deleteDoc,doc,setDoc,getDoc,writeBatch,onSnapshot,query,serverTimestamp};
 
   fb.onAuthStateChanged(fb.auth, u=>{
@@ -1035,7 +1060,7 @@ function myNickname(){
 }
 const NICK_RE = /^[가-힣a-zA-Z0-9_-]{2,20}$/;
 function maybePromptNickname(){
-  if(DEMO || !currentUser || !usersLoaded) return;
+  if(DEMO || withdrawing || !currentUser || !usersLoaded) return;
   if(usersMap[currentUser.uid]){ ensureNicknameClaim(); return; }
   if(nickPrompted) return;
   nickPrompted = true;
@@ -2355,8 +2380,9 @@ function openProfile(firstTime){
     firstTime ? "나중에 할게요" : "닫기";
   document.getElementById("profileNick").value = usersMap[currentUser?.uid] || "";
   document.getElementById("profileErr").textContent = "";
-  // 첫 닉네임 설정 때는 탭 없이 프로필만 (설정에 집중)
+  // 첫 닉네임 설정 때는 탭 없이 프로필만 (설정에 집중) · 탈퇴 링크도 숨김
   document.getElementById("profileTabs").style.display = firstTime ? "none" : "flex";
+  document.getElementById("withdrawLink").style.display = firstTime ? "none" : "";
   setProfileTab("profile");
   renderWishPane();
   profileOverlay.classList.add("open");
@@ -2417,6 +2443,103 @@ document.getElementById("profileSave").onclick = async ()=>{
   // 로그인→닉네임 설정 흐름에서 보류됐던 행동(기록하기 등)을 이제 이어가기
   runPendingAction();
 };
+
+/* ══════════════════════════════════════════════════════════════
+   14.5) 회원 탈퇴 — 재인증 후 내 데이터 완전 삭제 → 계정 삭제
+   · 순서 중요: Firestore 삭제가 먼저 (규칙 검증에 로그인 필요)
+   · 내 visits·wishes·likes·nicknames·users 문서를 로컬 구독 데이터로 열거해 배치 삭제
+   · 남이 내 후기에 남긴 공감은 규칙상 삭제 불가 → 고아 문서로 남지만 화면엔 미표시
+══════════════════════════════════════════════════════════════ */
+const withdrawOverlay = document.getElementById("withdrawOverlay");
+function openWithdraw(){
+  document.getElementById("withdrawErr").textContent = "";
+  document.getElementById("withdrawPw").value = "";
+  // 데모 모드엔 비밀번호가 없으므로 입력칸 숨김
+  document.getElementById("withdrawPwWrap").style.display = DEMO ? "none" : "";
+  withdrawOverlay.classList.add("open");
+  modalOpened(withdrawOverlay);
+}
+function closeWithdraw(){ withdrawOverlay.classList.remove("open"); modalClosed(withdrawOverlay); }
+document.getElementById("withdrawLink").onclick = openWithdraw;
+document.getElementById("withdrawCancel").onclick = closeWithdraw;
+setupOverlay(withdrawOverlay, closeWithdraw);
+
+let withdrawing = false; // 탈퇴 진행 중 — users 문서가 먼저 지워질 때 닉네임 프롬프트 오발 방지
+async function myDataRefs(uid){
+  const refs = [];
+  allVisits.filter(v=>v.uid===uid).forEach(v=>refs.push(fb.doc(fb.db,"visits",v.id)));
+  allWishes.filter(w=>w.uid===uid).forEach(w=>refs.push(fb.doc(fb.db,"wishes",uid+"_"+w.cityId)));
+  Object.entries(likesByVisit).forEach(([vid,uids])=>{
+    if(uids.includes(uid)) refs.push(fb.doc(fb.db,"likes",vid+"_"+uid));
+  });
+  // 닉네임 선점 문서는 "실제로 내가 소유한 경우"에만 포함 —
+  // 미존재(레거시 미선점)·타 계정 소유 상태에서 무조건 넣으면 규칙 거부로 배치 전체가 실패해 탈퇴 불가
+  const nick = usersMap[uid];
+  if(nick){
+    const nref = fb.doc(fb.db,"nicknames",nick.toLowerCase());
+    const ns = await fb.getDoc(nref).catch(()=>null);
+    if(ns?.exists() && ns.data().uid===uid) refs.push(nref);
+  }
+  refs.push(fb.doc(fb.db,"users",uid)); // 미존재여도 delete 규칙이 resource를 안 봐서 무해(no-op)
+  return refs;
+}
+document.getElementById("withdrawConfirm").onclick = async ()=>{
+  if(!currentUser) return;
+  const err = document.getElementById("withdrawErr");
+  err.textContent = "";
+  if(DEMO){
+    const uid = currentUser.uid;
+    allVisits = allVisits.filter(v=>v.uid!==uid);
+    allWishes = allWishes.filter(w=>w.uid!==uid);
+    Object.keys(likesByVisit).forEach(vid=>{
+      likesByVisit[vid] = likesByVisit[vid].filter(u=>u!==uid);
+    });
+    delete usersMap[uid];
+    currentUser = null;
+    if(myMode) setMyMode(false);
+    closeWithdraw(); closeProfile();
+    renderUser(); recompute();
+    toast("탈퇴가 완료됐어요. 함께한 여행, 즐거웠어요 ✈");
+    return;
+  }
+  const pw = document.getElementById("withdrawPw").value;
+  if(!pw){ err.textContent = "비밀번호를 입력해 주세요."; return; }
+  const user = fb.auth.currentUser;
+  if(!user){ err.textContent = "로그인 상태를 확인할 수 없어요. 새로고침 후 다시 시도해 주세요."; return; }
+  const btn = document.getElementById("withdrawConfirm");
+  btn.disabled = true; btn.textContent = "탈퇴 처리 중…";
+  withdrawing = true;
+  try{
+    // 1) 재인증 (계정 삭제는 최근 로그인 필요 — auth/requires-recent-login 예방)
+    await fb.reauthenticateWithCredential(user,
+      fb.EmailAuthProvider.credential(user.email, pw));
+    // 2) 내 데이터 삭제 (배치 한도 500 미만으로 나눠 커밋)
+    const refs = await myDataRefs(user.uid);
+    for(let i=0; i<refs.length; i+=450){
+      const batch = fb.writeBatch(fb.db);
+      refs.slice(i, i+450).forEach(r=>batch.delete(r));
+      await batch.commit();
+    }
+    // 3) 계정 삭제 → onAuthStateChanged가 로그아웃 상태 정리를 이어받음
+    await fb.deleteUser(user);
+    closeWithdraw(); closeProfile();
+    toast("탈퇴가 완료됐어요. 함께한 여행, 즐거웠어요 ✈");
+  }catch(e){
+    console.error(e);
+    if(e.code==="auth/invalid-credential" || e.code==="auth/wrong-password")
+      err.textContent = "비밀번호가 맞지 않아요.";
+    else if(e.code==="auth/too-many-requests")
+      err.textContent = "시도가 너무 많았어요. 잠시 후 다시 시도해 주세요.";
+    else
+      err.textContent = "탈퇴 처리에 실패했어요. 잠시 후 다시 시도해 주세요.";
+  }finally{
+    withdrawing = false;
+    btn.disabled = false; btn.textContent = "탈퇴하기";
+  }
+};
+document.getElementById("withdrawPw").addEventListener("keydown",e=>{
+  if(e.key==="Enter") document.getElementById("withdrawConfirm").click();
+});
 
 /* ══════════════════════════════════════════════════════════════
    15) 로그인 · 가입 · 비밀번호 재설정
@@ -2562,7 +2685,7 @@ function renderStats(){
       currentUser ? `${fv.filter(v=>v.uid===currentUser.uid).length}회` : "–";
   }
 }
-[authOverlay, visitOverlay, profileOverlay, rankOverlay, journalOverlay, myMapOverlay, cardOverlay, lightbox].forEach(trapFocus);
+[authOverlay, visitOverlay, profileOverlay, withdrawOverlay, rankOverlay, journalOverlay, myMapOverlay, cardOverlay, lightbox].forEach(trapFocus);
 document.addEventListener("keydown", e=>{
   if(!lightbox.classList.contains("open")) return;
   if(e.key==="ArrowLeft") document.getElementById("lbPrev").click();
@@ -2574,6 +2697,7 @@ document.addEventListener("keydown",e=>{
   else if(cardOverlay.classList.contains("open")) closeTripCard();
   else if(myMapOverlay.classList.contains("open")) closeMyMap();
   else if(visitOverlay.classList.contains("open")) closeVisitModal();
+  else if(withdrawOverlay.classList.contains("open")) closeWithdraw();
   else if(profileOverlay.classList.contains("open")) closeProfile();
   else if(rankOverlay.classList.contains("open")) closeRank();
   else if(journalOverlay.classList.contains("open")) closeJournal();
