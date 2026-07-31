@@ -278,6 +278,31 @@
   .withdraw-link:hover,.withdraw-link:focus-visible{opacity:1;color:#ff8f8f;}
   .btn.danger{background:rgba(255,143,143,.12);border-color:rgba(255,143,143,.5);color:#ff8f8f;}
   .btn.danger:hover{background:rgba(255,143,143,.2);border-color:#ff8f8f;}
+  /* ── 웰컴 카드 (온보딩) ── */
+  .modal.welcome{padding:22px 24px 26px;}
+  .welcome .handle{display:none;width:38px;height:4px;border-radius:2px;background:rgba(242,236,223,.25);margin:0 auto 14px;}
+  .welcome h2{font-size:21px;line-height:1.4;margin-bottom:4px;}
+  .welcome .row{display:flex;gap:12px;align-items:flex-start;margin-top:14px;}
+  .welcome .ic{
+    width:36px;height:36px;border-radius:11px;background:rgba(255,182,92,.34);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;
+  }
+  .welcome .row b{display:block;font-size:14px;font-weight:600;}
+  .welcome .row p{font-size:12.5px;color:var(--muted);line-height:1.55;margin-top:2px;}
+  .welcome #welcomeStart{margin-top:20px;}
+  @media (max-width:720px){
+    #welcomeOverlay{align-items:flex-end;padding:0;}
+    .modal.welcome{width:100%;max-height:none;border-radius:22px 22px 0 0;}
+    .welcome .handle{display:block;}
+  }
+  /* ── 기록 저장 클라이맥스 — 불빛 점화 파동 ── */
+  .pulse-wrap{position:relative;width:36px;height:36px;pointer-events:none;}
+  .pulse-ring{
+    position:absolute;inset:0;border:1.6px solid var(--amber);border-radius:50%;
+    opacity:0;animation:etmRing 1.15s ease-out forwards;
+  }
+  .pulse-ring.r2{animation-delay:.22s;}
+  @keyframes etmRing{0%{transform:scale(.3);opacity:.85}100%{transform:scale(3.1);opacity:0}}
   /* ── 사진 더 보기 (도시 갤러리) ── */
   .morephotos-btn{margin:10px 0 2px;padding:9px 14px;font-size:13px;}
   .photostrip{display:none;gap:8px;overflow-x:auto;padding:8px 0 10px;scrollbar-width:thin;}
@@ -530,6 +555,7 @@
   <div class="spacer"></div>
   <button class="btn mode" id="myModeBtn" aria-pressed="false" title="내 여행">🧭<span class="btn-label"> 내 여행</span></button>
   <button class="btn" id="rankBtn" title="랭킹">🏆<span class="btn-label"> 랭킹</span></button>
+  <button class="btn" id="helpBtn" title="사용 안내">도움말</button>
   <div class="userbox" id="userbox">
     <button class="btn primary" id="loginBtn">로그인</button>
   </div>
@@ -671,6 +697,28 @@
     <button class="btn danger" id="withdrawConfirm">탈퇴하기</button>
     <div class="err" id="withdrawErr"></div>
     <button class="btn alt" id="withdrawCancel">돌아가기</button>
+  </div>
+</div>
+
+<!-- 웰컴 카드 (첫 방문 자동 1회 + 도움말 버튼으로 상시) -->
+<div class="overlay" id="welcomeOverlay">
+  <div class="modal welcome" role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="welcomeTitle">
+    <div class="handle" aria-hidden="true"></div>
+    <h2 id="welcomeTitle">다녀온 도시에<br/>여행 기록을 남겨보세요 ✈</h2>
+    <p class="sub">여행자들이 함께 만드는 세계 여행 지도예요.</p>
+    <div class="row">
+      <div class="ic" aria-hidden="true">🌍</div>
+      <div><b>도시를 구경하세요</b><p>도시를 누르면 사진과 설명, 여행자들의 후기와 여행하기 좋은 시기를 볼 수 있어요</p></div>
+    </div>
+    <div class="row">
+      <div class="ic" aria-hidden="true">🧳</div>
+      <div><b>나의 기록을 남기세요</b><p>다녀온 도시에 기록을 남기면 지도가 더 밝아지고 내 여행 기록을 정리할 수 있어요</p></div>
+    </div>
+    <div class="row">
+      <div class="ic" aria-hidden="true">🗺</div>
+      <div><b>나의 여행을 확인하세요</b><p>여행 기록을 확인하고 나만의 세계 지도와 여행 카드를 만들어볼 수 있어요</p></div>
+    </div>
+    <button class="btn primary" id="welcomeStart">여행 지도 구경하기</button>
   </div>
 </div>
 
@@ -2246,12 +2294,18 @@ document.getElementById("visitSave").onclick = async ()=>{
   if(date > localToday()){ err.textContent = "미래 날짜는 기록할 수 없어요."; return; }
   const btn = document.getElementById("visitSave");
   const isEdit = !!editingVisit;
+  const cid = openedCity;
   btn.disabled = true; btn.textContent = "저장 중…";
-  const fail = await saveVisit(openedCity, date, visitReview.value.trim(), editingVisit?.id);
+  const fail = await saveVisit(cid, date, visitReview.value.trim(), editingVisit?.id);
   btn.disabled = false; btn.textContent = isEdit ? "수정하기" : "기록하기";
   if(fail){ err.textContent = fail; return; }
   closeVisitModal();
-  toast(isEdit ? "기록을 고쳤어요 ✏️" : `${CITY_MAP[openedCity].n}에 기록을 남겼어요 🧳`);
+  if(!isEdit){
+    // 클라이맥스: 방금 켜진 불빛에서 파동. 모바일은 패널이 지도를 덮으므로 닫고 전체 지도를 보상 화면으로
+    if(mobileLayout.matches) closePanel();
+    firePulse(cid);
+  }
+  toast(isEdit ? "기록을 고쳤어요 ✏️" : `${CITY_MAP[cid].n}에 기록을 남겼어요 🧳`);
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -2587,6 +2641,35 @@ document.getElementById("withdrawPw").addEventListener("keydown",e=>{
 });
 
 /* ══════════════════════════════════════════════════════════════
+   14.6) 웰컴 카드(온보딩) + 기록 저장 클라이맥스 연출
+══════════════════════════════════════════════════════════════ */
+const welcomeOverlay = document.getElementById("welcomeOverlay");
+function openWelcome(){
+  welcomeOverlay.classList.add("open");
+  modalOpened(welcomeOverlay);
+}
+function closeWelcome(){
+  welcomeOverlay.classList.remove("open");
+  modalClosed(welcomeOverlay);
+  try{ localStorage.setItem("etm_welcomed","1"); }catch(e){}
+}
+document.getElementById("helpBtn").onclick = openWelcome;
+document.getElementById("welcomeStart").onclick = closeWelcome;
+setupOverlay(welcomeOverlay, closeWelcome);
+// 첫 방문에만 자동으로 한 번 (이후엔 도움말 버튼으로 언제든)
+try{ if(!localStorage.getItem("etm_welcomed")) openWelcome(); }catch(e){}
+
+// 새 기록 저장 시 해당 도시에서 불빛 점화 파동 (마커 자체는 스냅샷 반영으로 즉시 amber化)
+const mobileLayout = window.matchMedia("(max-width:720px)");
+function firePulse(cityId){
+  const c = CITY_MAP[cityId]; if(!c) return;
+  const icon = L.divIcon({className:"", iconSize:[36,36], iconAnchor:[18,18],
+    html:`<div class="pulse-wrap"><div class="pulse-ring"></div><div class="pulse-ring r2"></div></div>`});
+  const m = L.marker([c.lat, c.lng], {icon, interactive:false}).addTo(map);
+  setTimeout(()=>map.removeLayer(m), 1600);
+}
+
+/* ══════════════════════════════════════════════════════════════
    15) 로그인 · 가입 · 비밀번호 재설정
 ══════════════════════════════════════════════════════════════ */
 const authOverlay = document.getElementById("authOverlay");
@@ -2731,7 +2814,7 @@ function renderStats(){
       currentUser ? `${fv.filter(v=>v.uid===currentUser.uid).length}회` : "–";
   }
 }
-[authOverlay, visitOverlay, profileOverlay, withdrawOverlay, rankOverlay, journalOverlay, myMapOverlay, cardOverlay, lightbox].forEach(trapFocus);
+[authOverlay, visitOverlay, profileOverlay, withdrawOverlay, rankOverlay, journalOverlay, myMapOverlay, cardOverlay, welcomeOverlay, lightbox].forEach(trapFocus);
 document.addEventListener("keydown", e=>{
   if(!lightbox.classList.contains("open")) return;
   if(e.key==="ArrowLeft") document.getElementById("lbPrev").click();
@@ -2748,6 +2831,7 @@ document.addEventListener("keydown",e=>{
   else if(rankOverlay.classList.contains("open")) closeRank();
   else if(journalOverlay.classList.contains("open")) closeJournal();
   else if(authOverlay.classList.contains("open")) cancelAuth();
+  else if(welcomeOverlay.classList.contains("open")) closeWelcome();
   else if(panel.classList.contains("open")) closePanel();
 });
 let toastTimer;
