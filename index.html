@@ -139,7 +139,6 @@
   .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;}
   .dot.amber{background:var(--amber);box-shadow:0 0 8px var(--amber);}
   .dot.teal{background:var(--teal);box-shadow:0 0 8px var(--teal);}
-  .dot.moon{background:var(--moon-soft);border:1.5px solid var(--moon);}
   .legend .lstar{width:11px;height:11px;margin-right:5px;vertical-align:-1px;}
   .demo-badge{
     display:none;margin-top:10px;font-size:11px;color:var(--amber);
@@ -229,7 +228,7 @@
   /* 후기 공감 (하트 토글) — 신고 버튼 오른쪽 */
   .like-btn{
     margin-left:auto;background:none;border:none;cursor:pointer;
-    font-size:11.5px;color:var(--muted);opacity:.65;padding:2px 5px;border-radius:6px;
+    font-size:11.5px;line-height:1;height:17px;color:var(--muted);opacity:.65;padding:2px 5px;border-radius:6px;
     display:inline-flex;align-items:center;gap:3px;transition:opacity .15s,color .15s;
   }
   .rep-btn + .like-btn,.rep-btn + .like-btn.static{margin-left:0;}
@@ -240,6 +239,8 @@
   /* 위시리스트 별 버튼 (도시 패널) — 링크 공유 버튼과 동일한 기본 .btn 스타일 */
   #wishBtn{flex-shrink:0;width:52px;display:inline-flex;align-items:center;justify-content:center;}
   #wishBtn svg{width:20px;height:20px;display:block;}
+  #wishBtn.on{color:var(--amber);border-color:rgba(255,182,92,.55);}
+  #wishBtn.on:hover{border-color:var(--amber);}
   /* 후기 정렬 (최신순 / 공감순) */
   .rev-head{display:flex;align-items:baseline;}
   .rev-sort{margin-left:auto;display:flex;gap:2px;align-items:center;letter-spacing:0;text-transform:none;}
@@ -256,10 +257,14 @@
   /* 여행 위시리스트 목록 */
   .wishhead{font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:6px;}
   .wishlist{list-style:none;max-height:280px;overflow-y:auto;scrollbar-width:thin;}
-  .wishlist li{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid rgba(242,236,223,.08);cursor:pointer;}
+  .wishlist li{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid rgba(242,236,223,.08);cursor:pointer;border-radius:8px;transition:background .15s;}
+  .wishlist li:hover{background:var(--amber-soft);border-bottom-color:transparent;}
+  .wishlist li:hover .wname{color:var(--amber);}
+  .wishlist li:hover .wgo{opacity:1;transform:translateX(0);}
+  .wishlist .wgo{color:var(--amber);font-size:13px;opacity:0;transform:translateX(-4px);transition:opacity .15s,transform .15s;flex-shrink:0;}
   .wishlist li:last-child{border-bottom:none;}
   .wishlist svg{width:14px;height:14px;flex-shrink:0;}
-  .wishlist .wname{flex:1;font-size:13.5px;}
+  .wishlist .wname{flex:1;font-size:13.5px;transition:color .15s;}
   .wishlist .wname small{color:var(--muted);font-size:12px;margin-left:4px;}
   .wishlist .wdel{background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;padding:4px 6px;font-family:var(--body);}
   .wishlist .wdel:hover{color:var(--paper);}
@@ -533,7 +538,7 @@
 <nav class="months" id="months" aria-label="월별 보기"></nav>
 
 <aside class="stats" id="statsBox" aria-live="polite">
-  <h2 id="statsTitle">지금까지 공유된 여행</h2>
+  <h2 id="statsTitle"><em>공유</em>된 여행</h2>
   <div class="row"><span id="statL1">기록된 여행</span><b id="statVisits">…</b></div>
   <div class="row"><span id="statL2">기록된 도시</span><b id="statCities">…</b></div>
   <div class="row"><span id="statL3">나의 여행</span><b id="statMine">–</b></div>
@@ -542,7 +547,6 @@
     <span><i class="dot amber"></i>모두의 도시</span>
     <span><i class="dot teal"></i>나의 도시</span>
     <span><svg class="lstar" viewBox="-7 -7 14 14" aria-hidden="true"><polygon points="0,-6 1.7,-1.7 6,0 1.7,1.7 0,6 -1.7,1.7 -6,0 -1.7,-1.7" fill="var(--paper)"/></svg>위시리스트</span>
-    <span><i class="dot moon"></i>잠든 도시</span>
   </div>
   <div class="demo-badge" id="demoBadge">
     데모 모드로 실행 중입니다.<br/>index.html의 firebaseConfig를 채우면<br/>실제 데이터가 저장됩니다.
@@ -1942,8 +1946,8 @@ function renderCityDynamic(id){
       const liked = iLiked(v.id);
       // 본인 후기는 공감 수만 표시 (자기 공감 방지 — 규칙에서도 차단)
       const like = isMine
-        ? (n ? `<span class="like-btn static" aria-label="공감 ${n}개">♥ ${n}</span>` : "")
-        : `<button class="like-btn${liked?" on":""}" data-like="${v.id}" title="${liked?"공감 취소":"공감"}" aria-label="이 후기에 공감">${liked?"♥":"♡"}${n?` ${n}`:""}</button>`;
+        ? (n ? `<span class="like-btn static" aria-label="공감 ${n}개">♥\uFE0E ${n}</span>` : "")
+        : `<button class="like-btn${liked?" on":""}" data-like="${v.id}" title="${liked?"공감 취소":"공감"}" aria-label="이 후기에 공감">${liked?"♥\uFE0E":"♡\uFE0E"}${n?` ${n}`:""}</button>`;
       return `<li><div class="meta"><b>${esc(mask(nameOf(v.uid, v.name)))}</b> · ${fmtDate(v.date)}${rep}${like}</div>
        <div class="txt">${esc(v.review)}</div></li>`;
     }).join("");
@@ -2047,12 +2051,13 @@ async function toggleLike(visitId){
 const WISH_STAR_OUTLINE =
   `<svg viewBox="-8 -8 16 16" aria-hidden="true"><polygon points="0,-7 2,-2 7,0 2,2 0,7 -2,2 -7,0 -2,-2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>`;
 const WISH_STAR_FILLED =
-  `<svg viewBox="-8 -8 16 16" aria-hidden="true"><polygon points="0,-7 2,-2 7,0 2,2 0,7 -2,2 -7,0 -2,-2" fill="currentColor"/></svg>`;
+  `<svg viewBox="-8 -8 16 16" aria-hidden="true"><polygon points="0,-7 2,-2 7,0 2,2 0,7 -2,2 -7,0 -2,-2" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 const wishBtn = document.getElementById("wishBtn");
 function updateWishBtn(){
   if(!openedCity) return;
   const on = myWishSet().has(openedCity);
   wishBtn.innerHTML = on ? WISH_STAR_FILLED : WISH_STAR_OUTLINE;
+  wishBtn.classList.toggle("on", on);
   wishBtn.title = on ? "위시리스트에서 해제" : "위시리스트 추가";
   wishBtn.setAttribute("aria-label", wishBtn.title);
   wishBtn.setAttribute("aria-pressed", on ? "true" : "false");
@@ -2424,6 +2429,7 @@ function renderWishPane(){
   listEl.innerHTML = ids.map(id=>{
     const c = CITY_MAP[id]; if(!c) return "";
     return `<li data-wcity="${id}">${star}<span class="wname">${esc(c.n)}<small>${esc(c.c)}</small></span>`+
+           `<span class="wgo" aria-hidden="true">보러가기 →</span>`+
            `<button class="wdel" data-wdel="${id}" aria-label="${esc(c.n)} 위시리스트에서 해제">해제</button></li>`;
   }).join("");
 }
@@ -2681,7 +2687,7 @@ function renderStats(){
     document.getElementById("statMine").textContent =
       new Set(myFv.map(v=>normCountry(CITY_MAP[v.cityId].c))).size + "곳";  // 하와이=미국 병합(진행도와 동일 기준)
   }else{
-    t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>의 여행` : "지금까지 공유된 여행";
+    t.innerHTML = currentMonth ? `<em>${currentMonth}월</em>의 여행` : `<em>공유</em>된 여행`;
     document.getElementById("statL1").textContent = "기록된 여행";
     document.getElementById("statL2").textContent = "기록된 도시";
     document.getElementById("statL3").textContent = "나의 여행";
