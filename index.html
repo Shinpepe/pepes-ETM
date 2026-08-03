@@ -44,7 +44,9 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
-  body{font-family:var(--body);background:var(--ink);color:var(--paper);overflow:hidden;}
+  body{font-family:var(--body);background:var(--ink);color:var(--paper);overflow:hidden;
+    word-break:keep-all;overflow-wrap:break-word; /* 어절 단위 줄바꿈 — 단어 잘림 방지(전역), 넘칠 때만 분리 */
+  }
   #map{position:fixed;inset:0;background:var(--ink);}
   .leaflet-container{background:var(--ink);font-family:var(--body);}
 
@@ -254,6 +256,28 @@
   .wish-star{width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .wish-star svg{width:22px;height:22px;overflow:visible;animation:twinkle 2.8s ease-in-out infinite;animation-delay:var(--tw-delay,0s);}
   @keyframes twinkle{0%,100%{opacity:.95}50%{opacity:.45}}
+  /* 선택 도시 비컨(달빛 점선 링) — 점선이 둘레를 따라 흐르는 stroke-dashoffset 방식.
+     ⚠ SVG에 CSS transform 회전·확대 금지: 기준점이 뷰포트로 잡혀 링이 궤도를 돈다(9장 원칙) */
+  .city-beacon{pointer-events:none;transition:opacity .45s;}
+  .city-beacon.off{opacity:0;}
+  .city-beacon svg{display:block;overflow:visible;}
+  .city-beacon .march{animation:beaconDash 3.2s linear infinite;}
+  @keyframes beaconDash{to{stroke-dashoffset:-27;}}
+  @media (prefers-reduced-motion:reduce){ .city-beacon .march{animation:none;} }
+  /* 지도 마커 포커스: 마우스 클릭의 브라우저 기본 흰 사각형은 숨기고, 키보드 탐색(Tab)에만 amber 링 */
+  .leaflet-interactive:focus:not(:focus-visible),
+  .leaflet-marker-icon:focus:not(:focus-visible){outline:none;}
+  .leaflet-interactive:focus-visible,
+  .leaflet-marker-icon:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+  /* 도시 정보 칩(시차·직항·화폐) */
+  .factchips{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 12px;}
+  .factchips .fchip{font-size:12px;line-height:1.5;color:rgba(242,236,223,.88);
+    border:1px solid var(--line);border-radius:999px;padding:4px 11px;background:rgba(242,236,223,.04);}
+  .factchips .fchip .fl{color:rgba(242,236,223,.45);font-size:11px;margin-right:7px;}
+  @media (max-width:720px){
+    .factchips{display:grid;grid-template-columns:1fr 1fr;}
+    .factchips .fchip.wide{grid-column:1 / -1;}
+  }
   /* 여행 위시리스트 목록 */
   .wishhead{font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:6px;}
   .wishlist{list-style:none;max-height:280px;overflow-y:auto;scrollbar-width:thin;}
@@ -284,7 +308,8 @@
   .welcome h2{font-size:21px;line-height:1.4;margin-bottom:4px;}
   .welcome .row{display:flex;gap:12px;align-items:flex-start;margin-top:14px;}
   .welcome .ic{
-    width:36px;height:36px;border-radius:11px;background:rgba(255,182,92,.34);
+    width:36px;height:36px;border-radius:11px;
+    background:var(--teal-soft);border:1px solid rgba(89,220,201,.32);
     display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;
   }
   .welcome .row b{display:block;font-size:14px;font-weight:600;}
@@ -592,6 +617,7 @@
   </div>
   <div class="panel-body">
     <div class="visitline"><b id="panelCount">0</b><span id="panelCountLabel">번의 여행이 이곳에 닿았어요</span></div>
+    <div class="factchips" id="factChips"></div>
     <p class="desc" id="panelDesc"></p>
     <button class="btn morephotos-btn" id="morePhotosBtn">📷 사진 더 보기</button>
     <div class="photostrip" id="photoStrip" role="list" aria-label="도시 사진"></div>
@@ -1804,6 +1830,127 @@ const localToday = ()=>{
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 };
 
+/* ── 도시 정보 칩 데이터: 시간대(IANA)·화폐(normCountry 키)·인천 직항 여부 ──
+   · CITY_TZ: 정적 시차 대신 IANA 존 저장 — Intl이 서머타임·30/45분 시차를 자동 처리
+   · NO_DIRECT: 인천 직항이 없는 도시(2026-08 기준, 위키·나무위키 운항노선 교차 검증). 연 1~2회 재검
+   · VIA_GATEWAY: "관문까지 직항 후 지상 이동"이 표준 경로로 검증된 도시만 — 실경로 확인 없이 추가 금지 */
+const CITY_TZ = {seoul:"Asia/Seoul",busan:"Asia/Seoul",jeju:"Asia/Seoul",gyeongju:"Asia/Seoul",tokyo:"Asia/Tokyo",osaka:"Asia/Tokyo",kyoto:"Asia/Tokyo",fukuoka:"Asia/Tokyo",sapporo:"Asia/Tokyo",nagoya:"Asia/Tokyo",okinawa:"Asia/Tokyo",kanazawa:"Asia/Tokyo",takamatsu:"Asia/Tokyo",matsuyama:"Asia/Tokyo",asahikawa:"Asia/Tokyo",miyakojima:"Asia/Tokyo",taipei:"Asia/Taipei",hongkong:"Asia/Hong_Kong",macau:"Asia/Macau",beijing:"Asia/Shanghai",shanghai:"Asia/Shanghai",xian:"Asia/Shanghai",chengdu:"Asia/Shanghai",zhangjiajie:"Asia/Shanghai",guilin:"Asia/Shanghai",bangkok:"Asia/Bangkok",chiangmai:"Asia/Bangkok",phuket:"Asia/Bangkok",pattaya:"Asia/Bangkok",krabi:"Asia/Bangkok",singapore:"Asia/Singapore",kualalumpur:"Asia/Kuala_Lumpur",kotakinabalu:"Asia/Kuching",bali:"Asia/Makassar",hanoi:"Asia/Ho_Chi_Minh",danang:"Asia/Ho_Chi_Minh",hochiminh:"Asia/Ho_Chi_Minh",nhatrang:"Asia/Ho_Chi_Minh",dalat:"Asia/Ho_Chi_Minh",phuquoc:"Asia/Ho_Chi_Minh",cebu:"Asia/Manila",boracay:"Asia/Manila",manila:"Asia/Manila",siemreap:"Asia/Phnom_Penh",luangprabang:"Asia/Vientiane",male:"Indian/Maldives",kathmandu:"Asia/Kathmandu",pokhara:"Asia/Kathmandu",colombo:"Asia/Colombo",delhi:"Asia/Kolkata",jaipur:"Asia/Kolkata",agra:"Asia/Kolkata",varanasi:"Asia/Kolkata",dubai:"Asia/Dubai",abudhabi:"Asia/Dubai",doha:"Asia/Qatar",petra:"Asia/Amman",istanbul:"Europe/Istanbul",antalya:"Europe/Istanbul",cappadocia:"Europe/Istanbul",ulaanbaatar:"Asia/Ulaanbaatar",moscow:"Europe/Moscow",saintpetersburg:"Europe/Moscow",vladivostok:"Asia/Vladivostok",irkutsk:"Asia/Irkutsk",tashkent:"Asia/Tashkent",samarkand:"Asia/Tashkent",almaty:"Asia/Almaty",tbilisi:"Asia/Tbilisi",baku:"Asia/Baku",yerevan:"Asia/Yerevan",london:"Europe/London",edinburgh:"Europe/London",dublin:"Europe/Dublin",paris:"Europe/Paris",nice:"Europe/Paris",rome:"Europe/Rome",florence:"Europe/Rome",venice:"Europe/Rome",milan:"Europe/Rome",naples:"Europe/Rome",barcelona:"Europe/Madrid",madrid:"Europe/Madrid",seville:"Europe/Madrid",granada:"Europe/Madrid",palma:"Europe/Madrid",bilbao:"Europe/Madrid",lisbon:"Europe/Lisbon",porto:"Europe/Lisbon",amsterdam:"Europe/Amsterdam",brussels:"Europe/Brussels",bruges:"Europe/Brussels",berlin:"Europe/Berlin",munich:"Europe/Berlin",frankfurt:"Europe/Berlin",prague:"Europe/Prague",vienna:"Europe/Vienna",salzburg:"Europe/Vienna",budapest:"Europe/Budapest",krakow:"Europe/Warsaw",warsaw:"Europe/Warsaw",zagreb:"Europe/Zagreb",dubrovnik:"Europe/Zagreb",zurich:"Europe/Zurich",interlaken:"Europe/Zurich",athens:"Europe/Athens",santorini:"Europe/Athens",valletta:"Europe/Malta",helsinki:"Europe/Helsinki",stockholm:"Europe/Stockholm",copenhagen:"Europe/Copenhagen",oslo:"Europe/Oslo",tromso:"Europe/Oslo",reykjavik:"Atlantic/Reykjavik",tallinn:"Europe/Tallinn",newyork:"America/New_York",washington:"America/New_York",boston:"America/New_York",miami:"America/New_York",orlando:"America/New_York",la:"America/Los_Angeles",sf:"America/Los_Angeles",lasvegas:"America/Los_Angeles",seattle:"America/Los_Angeles",chicago:"America/Chicago",honolulu:"Pacific/Honolulu",vancouver:"America/Vancouver",toronto:"America/Toronto",montreal:"America/Toronto",banff:"America/Edmonton",yellowknife:"America/Edmonton",cancun:"America/Cancun",mexicocity:"America/Mexico_City",havana:"America/Havana",cartagena:"America/Bogota",puntacana:"America/Santo_Domingo",lima:"America/Lima",cusco:"America/Lima",uyuni:"America/La_Paz",rio:"America/Sao_Paulo",iguazu:"America/Sao_Paulo",buenosaires:"America/Argentina/Buenos_Aires",elcalafate:"America/Argentina/Buenos_Aires",santiago:"America/Santiago",sydney:"Australia/Sydney",melbourne:"Australia/Melbourne",brisbane:"Australia/Brisbane",cairns:"Australia/Brisbane",auckland:"Pacific/Auckland",queenstown:"Pacific/Auckland",guam:"Pacific/Guam",saipan:"Pacific/Saipan",cairo:"Africa/Cairo",luxor:"Africa/Cairo",capetown:"Africa/Johannesburg",zanzibar:"Africa/Dar_es_Salaam",nairobi:"Africa/Nairobi",victoriafalls:"Africa/Harare",marrakech:"Africa/Casablanca"};
+const CURRENCY = {"대한민국":"원(KRW)","일본":"엔(JPY)","중국":"위안(CNY)","홍콩":"홍콩 달러(HKD)","마카오":"파타카(MOP)","대만":"신대만 달러(TWD)","몽골":"투그릭(MNT)","베트남":"동(VND)","태국":"밧(THB)","필리핀":"페소(PHP)","캄보디아":"리엘(KHR)","라오스":"킵(LAK)","말레이시아":"링깃(MYR)","싱가포르":"싱가포르 달러(SGD)","인도네시아":"루피아(IDR)","몰디브":"루피야(MVR)","네팔":"네팔 루피(NPR)","스리랑카":"스리랑카 루피(LKR)","인도":"루피(INR)","아랍에미리트":"디르함(AED)","카타르":"카타르 리얄(QAR)","요르단":"요르단 디나르(JOD)","튀르키예":"리라(TRY)","러시아":"루블(RUB)","우즈베키스탄":"숨(UZS)","카자흐스탄":"텡게(KZT)","조지아":"라리(GEL)","아제르바이잔":"마나트(AZN)","아르메니아":"드람(AMD)","영국":"파운드(GBP)","아일랜드":"유로(EUR)","프랑스":"유로(EUR)","이탈리아":"유로(EUR)","스페인":"유로(EUR)","포르투갈":"유로(EUR)","네덜란드":"유로(EUR)","벨기에":"유로(EUR)","독일":"유로(EUR)","체코":"코루나(CZK)","오스트리아":"유로(EUR)","헝가리":"포린트(HUF)","폴란드":"즈워티(PLN)","크로아티아":"유로(EUR)","스위스":"스위스 프랑(CHF)","그리스":"유로(EUR)","몰타":"유로(EUR)","핀란드":"유로(EUR)","스웨덴":"크로나(SEK)","덴마크":"크로네(DKK)","노르웨이":"크로네(NOK)","아이슬란드":"크로나(ISK)","에스토니아":"유로(EUR)","미국":"달러(USD)","미국령 괌":"달러(USD)","북마리아나 제도":"달러(USD)","캐나다":"캐나다 달러(CAD)","멕시코":"페소(MXN)","쿠바":"쿠바 페소(CUP)","콜롬비아":"콜롬비아 페소(COP)","도미니카공화국":"도미니카 페소(DOP)","페루":"솔(PEN)","볼리비아":"볼리비아노(BOB)","브라질":"헤알(BRL)","아르헨티나":"아르헨티나 페소(ARS)","칠레":"칠레 페소(CLP)","호주":"호주 달러(AUD)","뉴질랜드":"뉴질랜드 달러(NZD)","이집트":"이집트 파운드(EGP)","남아프리카공화국":"랜드(ZAR)","탄자니아":"탄자니아 실링(TZS)","케냐":"케냐 실링(KES)","짐바브웨":"미국 달러 통용(USD)","모로코":"모로코 디르함(MAD)"};
+const NO_DIRECT = new Set(["kyoto", "kanazawa", "asahikawa", "miyakojima", "pattaya", "krabi", "luangprabang", "male", "pokhara", "jaipur", "agra", "varanasi", "petra", "antalya", "cappadocia", "moscow", "saintpetersburg", "vladivostok", "irkutsk", "samarkand", "tbilisi", "baku", "yerevan", "edinburgh", "dublin", "nice", "florence", "venice", "naples", "seville", "granada", "palma", "bilbao", "porto", "brussels", "bruges", "berlin", "vienna", "salzburg", "krakow", "dubrovnik", "interlaken", "santorini", "valletta", "stockholm", "oslo", "tromso", "reykjavik", "tallinn", "miami", "orlando", "banff", "yellowknife", "cancun", "havana", "cartagena", "puntacana", "lima", "cusco", "uyuni", "rio", "iguazu", "buenosaires", "santiago", "elcalafate", "cairns", "queenstown", "cairo", "luxor", "capetown", "zanzibar", "nairobi", "victoriafalls", "marrakech"]);
+const VIA_GATEWAY = {kyoto:"오사카",pattaya:"방콕",agra:"델리",kanazawa:"도쿄",asahikawa:"삿포로",bruges:"파리",interlaken:"취리히",florence:"로마",naples:"로마",seville:"마드리드",granada:"마드리드",salzburg:"뮌헨",krakow:"바르샤바",tallinn:"헬싱키"};
+const ICN_POS = [37.4602, 126.4407]; // 인천국제공항
+
+// 대권거리(km)
+function havKm(a,b){
+  const R=6371, r=Math.PI/180;
+  const h=Math.sin((b[0]-a[0])*r/2)**2 +
+          Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin((b[1]-a[1])*r/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+/* 직항 비행시간 추정(시간 단위) — 하버사인 + 방향 보정.
+   실측 앵커(도쿄~파리·뉴욕 등 16개 노선)로 계수 보정, 전 노선 ±30분 검증(2026-08).
+   · 기본 840km/h ± 동서 성분×110 (제트기류: 동행 순풍, 서행 역풍)
+   · 단거리(<2200km)는 이착륙 비중이 커서 순항속도 상한 720
+   · 극지 항로(고위도 동행 초장거리, 뉴욕 등)는 제트기류 이득 제한 → 상한 830
+   · 유럽 장거리 서행(>8200km)은 러시아 영공 우회 +1.5h */
+function flightEstimate(city){
+  const d = havKm(ICN_POS, [city.lat, city.lng]);
+  const dlng = (city.lng - ICN_POS[1] + 540) % 360 - 180;
+  const ew = Math.max(-1, Math.min(1,
+    (dlng * 111 * Math.cos((city.lat + ICN_POS[0]) / 2 * Math.PI / 180)) / Math.max(d, 1)));
+  let sp = 840 + 110 * ew;
+  if(d < 2200) sp = Math.min(sp, 720);
+  if(ew > 0.6 && d > 10000 && city.lat > 38) sp = Math.min(sp, 830);
+  let t = d / sp + 0.7;
+  if(ew < -0.6 && d > 8200) t += 1.5;
+  return t;
+}
+// 한국과의 시차(분) — 같은 순간을 두 시간대로 렌더해 비교(30·45분 시차 자동 처리)
+function tzDiffMinutes(tz){
+  const now = new Date();
+  const wall = z=>{
+    // hourCycle h23 강제: 일부 ICU는 자정을 h24("24시, 날짜는 전날")로 반환 —
+    // 이때 %24로 누르면 하루가 어긋난다. h23이면 항상 00~23 + 올바른 날짜.
+    const p = new Intl.DateTimeFormat("en-US",{timeZone:z, year:"numeric", month:"2-digit",
+      day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23"})
+      .formatToParts(now).reduce((o,x)=>(o[x.type]=x.value,o),{});
+    return Date.UTC(+p.year, +p.month-1, +p.day, +p.hour, +p.minute);
+  };
+  return Math.round((wall(tz) - wall("Asia/Seoul")) / 60000);
+}
+function renderFactChips(city){
+  const box = document.getElementById("factChips");
+  if(!box) return;
+  if(city.c === "대한민국"){ box.style.display="none"; box.innerHTML=""; return; }
+  const chips = [];
+  const tz = CITY_TZ[city.id];
+  if(tz){
+    try{
+      const now = new Date();
+      // ① 시차 (hover에 문장형 안내)
+      const diff = tzDiffMinutes(tz);
+      let dval, dtitle;
+      if(diff === 0){ dval = "없음"; dtitle = "한국과 시차가 없어요"; }
+      else{
+        const a = Math.abs(diff), hh = Math.floor(a/60), mm = a % 60;
+        const body = mm ? `${hh}시간 ${mm}분` : `${hh}시간`;
+        dval = `한국 ${diff > 0 ? "+" : "-"}${body}`;
+        dtitle = `한국보다 ${body} ${diff > 0 ? "빨라요" : "느려요"}`;
+      }
+      chips.push(`<span class="fchip" title="${esc(dtitle)}"><span class="fl">시차</span>${esc(dval)}</span>`);
+      // ② 현지 시간 (밤/낮 표시)
+      const timeStr = new Intl.DateTimeFormat("ko-KR",{timeZone:tz, hour:"numeric",
+        minute:"2-digit", hour12:true}).format(now);
+      const h24 = +new Intl.DateTimeFormat("en-US",{timeZone:tz, hour:"2-digit",
+        hourCycle:"h23"}).format(now);
+      const sky = (h24 >= 6 && h24 < 18) ? "☀\uFE0E" : "🌙";
+      chips.push(`<span class="fchip"><span class="fl">현지 시간</span>${esc(timeStr)} ${sky}</span>`);
+    }catch(e){ /* Intl 미지원 환경은 시차·시간 칩 생략 */ }
+  }
+  // ③ 소요 시간 (hover 문구 없음 — 사용자 확정)
+  if(NO_DIRECT.has(city.id)){
+    const via = VIA_GATEWAY[city.id];
+    chips.push(`<span class="fchip wide"><span class="fl">소요 시간</span>직항 없음 · ${via ? esc(via)+"까지 직항 후 이동" : "경유 필요"}</span>`);
+  }else{
+    const t = flightEstimate(city), n = Math.floor(t);
+    chips.push(`<span class="fchip wide"><span class="fl">소요 시간</span>인천에서 직항 약 ${n}~${n+1}시간</span>`);
+  }
+  // ④ 화폐
+  const cur = CURRENCY[normCountry(city.c)];
+  if(cur) chips.push(`<span class="fchip"><span class="fl">화폐</span>${esc(cur)}</span>`);
+  box.style.display = "";
+  box.innerHTML = chips.join("");
+}
+// 현지 시각 칩 라이브 갱신 (패널이 열려 있을 때만)
+setInterval(()=>{
+  if(openedCity && panel.classList.contains("open")) renderFactChips(CITY_MAP[openedCity]);
+}, 30000);
+
+/* ── 선택 도시 비컨 링 ──
+   markerLayer는 redraw로 지워지므로 map에 직접 부착(firePulse와 동일 원칙).
+   웹: 패널이 열려 있는 동안 유지, 닫으면 페이드. 모바일: 닫은 뒤 1.5초 머물다 페이드 */
+let beaconMarker = null, beaconTimer = null;
+const BEACON_SVG =
+  '<svg width="52" height="52" viewBox="-26 -26 52 52">' +
+  '<circle class="march" r="17" fill="none" stroke="#8ea7e9" stroke-width="1.6"' +
+  ' stroke-dasharray="5 4" stroke-linecap="round" opacity=".9"/>' +
+  '<circle r="22" fill="none" stroke="#8ea7e9" stroke-width=".8" opacity=".28"/></svg>';
+function showBeacon(id){
+  const c = CITY_MAP[id]; if(!c) return;
+  hideBeacon(true);
+  const icon = L.divIcon({className:"", iconSize:[52,52], iconAnchor:[26,26],
+    html:`<div class="city-beacon">${BEACON_SVG}</div>`});
+  beaconMarker = L.marker([c.lat, c.lng], {icon, interactive:false, keyboard:false}).addTo(map);
+}
+function hideBeacon(now){
+  clearTimeout(beaconTimer); beaconTimer = null;
+  if(!beaconMarker) return;
+  const m = beaconMarker; beaconMarker = null;
+  if(now){ map.removeLayer(m); return; }
+  m.getElement()?.querySelector(".city-beacon")?.classList.add("off");
+  setTimeout(()=>map.removeLayer(m), 480);
+}
+
 async function openCity(id){
   const city = CITY_MAP[id]; if(!city) return;
   openedCity = id;
@@ -1812,6 +1959,7 @@ async function openCity(id){
   document.getElementById("panelCountry").textContent = city.c;
   document.getElementById("panelDesc").textContent = city.d;
   document.getElementById("panelSpots").innerHTML = city.s.map(s=>`<li>${esc(s)}</li>`).join("");
+  renderFactChips(city);
   renderCityDynamic(id);
   updateWishBtn();
   panel.querySelector(".panel-body").scrollTop = 0; // 도시 전환 시 스크롤 초기화
@@ -1821,6 +1969,7 @@ async function openCity(id){
   photoBox.querySelector("img")?.remove(); noimg.style.display="flex"; note.textContent="";
   resetPhotoStrip();
   panel.classList.add("open");
+  showBeacon(id);
   map.flyTo([city.lat,city.lng], Math.max(map.getZoom(),5), {duration:.8});
   try{
     if(!wikiCache[id]){
@@ -2146,6 +2295,11 @@ document.getElementById("myTrips").addEventListener("click",e=>{
 });
 function closePanel(){
   panel.classList.remove("open");
+  // 비컨: 데스크톱은 바로 페이드, 모바일은 1.5초 여운(패널이 지도를 덮고 있었으므로 위치 확인 시간)
+  if(mobileLayout.matches){
+    clearTimeout(beaconTimer);
+    beaconTimer = setTimeout(()=>hideBeacon(false), 1500);
+  }else hideBeacon(false);
   if(location.hash.startsWith("#city="))
     history.replaceState(null, "", location.pathname + location.search);
 }
