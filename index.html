@@ -1349,14 +1349,23 @@ async function saveVisit(cityId, date, review, editId){
     if(editId){
       await fb.updateDoc(fb.doc(fb.db,"visits",editId), {date, review});
     }else{
-      await fb.addDoc(fb.collection(fb.db,"visits"),{
+      // v4.5: 규칙이 같은 배치에서 users.lastWriteAt 스탬프를 요구 (쓰기 쿨다운)
+      const batch = fb.writeBatch(fb.db);
+      batch.set(fb.doc(fb.collection(fb.db,"visits")),{
         uid:currentUser.uid, name:myNickname(), cityId, date, review,
         createdAt:fb.serverTimestamp()
       });
+      batch.set(fb.doc(fb.db,"users",currentUser.uid),
+        {lastWriteAt: fb.serverTimestamp()}, {merge:true});
+      await batch.commit();
     }
     return null;
-  }catch(e){ console.error(e); return "저장에 실패했어요. Firestore 규칙을 확인해 주세요."; }
-}
+  }catch(e){
+    console.error(e);
+    if(e.code==="permission-denied")
+      return "너무 빠르게 저장했어요. 잠시 후 다시 시도해 주세요.";
+    return "저장에 실패했어요. 잠시 후 다시 시도해 주세요.";
+  }
 async function removeVisit(visitId){
   if(DEMO){
     allVisits = allVisits.filter(v=>v.id!==visitId);
