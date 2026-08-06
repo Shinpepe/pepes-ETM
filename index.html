@@ -1366,6 +1366,7 @@ async function saveVisit(cityId, date, review, editId){
       return "너무 빠르게 저장했어요. 잠시 후 다시 시도해 주세요.";
     return "저장에 실패했어요. 잠시 후 다시 시도해 주세요.";
   }
+}
 async function removeVisit(visitId){
   if(DEMO){
     allVisits = allVisits.filter(v=>v.id!==visitId);
