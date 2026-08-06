@@ -2739,6 +2739,8 @@ async function bulkSaveAll(){
       entries.forEach(e=>batch.set(fb.doc(fb.collection(fb.db,"visits")),{
         uid:currentUser.uid, name:myNickname(), cityId:e.cityId, date:e.date, review:"",
         createdAt:fb.serverTimestamp()}));
+      batch.set(fb.doc(fb.db,"users",currentUser.uid),
+        {lastWriteAt: fb.serverTimestamp()}, {merge:true});  // v4.5: 쿨다운 스탬프
       await batch.commit();
     }
   }catch(err){
