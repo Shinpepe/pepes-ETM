@@ -3313,7 +3313,8 @@ document.addEventListener("keydown",e=>{
 let toastTimer;
 function toast(msg, ic){
   const t = document.getElementById("toast");
-  t.innerHTML = esc(msg) + (ic ? "&nbsp;"+icon(ic) : ""); // 줄바꿈 시 아이콘만 떨어지지 않게 t.classList.add("show");
+  t.innerHTML = esc(msg) + (ic ? "&nbsp;"+icon(ic) : ""); // 줄바꿈 시 아이콘만 떨어지지 않게
+  t.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(()=>t.classList.remove("show"), 2600);
 }
