@@ -281,7 +281,7 @@
     .factchips{display:grid;grid-template-columns:1fr 1fr;}
     .factchips .fchip.wide{grid-column:1 / -1;}
   }
-  /* 여행 위시리스트 목록 */
+  /* 위시리스트 목록 */
   .wishhead{font-family:var(--display);font-size:15px;font-weight:700;margin-bottom:6px;}
   .wishlist{list-style:none;max-height:280px;overflow-y:auto;scrollbar-width:thin;}
   .wishlist li{display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid rgba(242,236,223,.08);cursor:pointer;border-radius:8px;transition:background .15s;}
@@ -296,6 +296,24 @@
   .wishlist .wdel{background:none;border:none;cursor:pointer;color:var(--muted);font-size:12px;padding:4px 6px;font-family:var(--body);}
   .wishlist .wdel:hover{color:var(--paper);}
   .wishhint{font-size:12px;color:var(--muted);opacity:.75;margin-top:10px;}
+  /* 여행 뱃지 (여행자 메뉴 3번째 탭) — 획득: amber 실선(불빛 문법) / 미획득: 달빛 점선(잠든 도시 문법) */
+  .badgewrap{max-height:340px;overflow-y:auto;scrollbar-width:thin;position:relative;padding-right:2px;}
+  .bcat{font-size:11px;letter-spacing:.08em;color:var(--moon);margin:14px 0 8px;}
+  .badgewrap .bcat:first-child{margin-top:2px;}
+  .badge-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .badge{background:none;border:none;font-family:var(--body);cursor:pointer;text-align:center;padding:10px 4px;border-radius:10px;}
+  .badge:focus-visible{outline:2px solid var(--amber);outline-offset:2px;}
+  .badge.on{background:rgba(255,182,92,.07);}
+  .badge .bic{width:48px;height:48px;margin:0 auto 7px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:var(--moon-soft);border:1.5px dashed rgba(142,167,233,.45);color:rgba(142,167,233,.75);}
+  .badge.on .bic{background:var(--amber-soft);border:1.5px solid var(--amber);color:var(--amber);}
+  .badge .bic .svgi{width:22px;height:22px;}
+  .badge .bname{display:block;font-size:12.5px;color:rgba(242,236,223,.6);line-height:1.3;}
+  .badge.on .bname{color:var(--paper);}
+  .badge .bsub{display:block;font-size:11px;color:var(--moon);margin-top:2px;}
+  .badge.on .bsub{color:var(--amber);}
+  .badge-tip{position:absolute;display:none;background:var(--ink);border:1px solid rgba(242,236,223,.28);border-radius:8px;
+    padding:7px 11px;font-size:11.5px;line-height:1.5;color:var(--paper);max-width:190px;pointer-events:none;z-index:5;}
   /* 회원 탈퇴 */
   .withdraw-link{
     display:block;margin:16px auto 0;background:none;border:none;cursor:pointer;
@@ -634,6 +652,17 @@
   <symbol id="i-pencil" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m17.2 2.8 4 4L8.7 19.3 4 21l1.7-4.7L17.2 2.8Z"/><path d="m15.6 4.4 4 4"/><path d="m6.4 15.2 2.4 2.4"/><path d="M4 21l1-2.8 1.8 1.8L4 21Z" fill="currentColor" stroke="none"/></g></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><ellipse cx="12" cy="12" rx="3.8" ry="8.5"/><path d="M3.8 12h16.4M4.9 8h14.2M4.9 16h14.2"/></g></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v10M8.5 10 12 13.5 15.5 10"/><path d="M4.5 16.5V19a1.5 1.5 0 0 0 1.5 1.5h12A1.5 1.5 0 0 0 19.5 19v-2.5"/></g></symbol>
+  <symbol id="i-train" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.8" width="14" height="13.2" rx="3"/><path d="M5 10.6h14"/><circle cx="9.2" cy="13.9" r="1" fill="currentColor" stroke="none"/><circle cx="14.8" cy="13.9" r="1" fill="currentColor" stroke="none"/><path d="m8.3 20.2 1.4-3.2M15.7 20.2l-1.4-3.2"/></g></symbol>
+  <symbol id="i-ship" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.7h16l-2.3 3.9a2.2 2.2 0 0 1-1.9 1.1H8.2a2.2 2.2 0 0 1-1.9-1.1L4 14.7Z"/><path d="M12 3.6v11.1"/><path d="M12 4.6l5.6 7.2H12"/></g></symbol>
+  <symbol id="i-crown" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 16.3 5.9 8.5l3.9 3.1L12 6.3l2.2 5.3 3.9-3.1 1.3 7.8H4.6Z"/><path d="M6 19.6h12"/></g></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 5H4v10.6h3.2v3.6l4.5-3.6H20V5Z"/><path d="M8 8.6h8M8 11.6h5"/></g></symbol>
+  <symbol id="i-star5" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3.7 2.5 5 5.5.8-4 3.9.95 5.5L12 16.3l-4.95 2.6.95-5.5-4-3.9 5.5-.8 2.5-5Z"/></g></symbol>
+  <symbol id="i-star4" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 13.9 10.1 20.8 12 13.9 13.9 12 20.8 10.1 13.9 3.2 12 10.1 10.1 12 3.2Z"/></g></symbol>
+  <symbol id="i-mappin" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.8c-4.2-4.5-6.3-7.8-6.3-10.8a6.3 6.3 0 1 1 12.6 0c0 3-2.1 6.3-6.3 10.8Z"/><circle cx="12" cy="9.8" r="2.3"/></g></symbol>
+  <symbol id="i-flower" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2.1"/><circle cx="12" cy="7" r="2.5"/><circle cx="16.3" cy="9.5" r="2.5"/><circle cx="16.3" cy="14.5" r="2.5"/><circle cx="12" cy="17" r="2.5"/><circle cx="7.7" cy="14.5" r="2.5"/><circle cx="7.7" cy="9.5" r="2.5"/></g></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 19.2C4.8 10.8 10.8 4.8 19.2 4.8c0 8.4-6 14.4-14.4 14.4Z"/><path d="M4.8 19.2C8.4 15.6 12 12 16.4 7.6"/></g></symbol>
+  <symbol id="i-snow" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9"/><path d="M9.7 5.5 12 7.8l2.3-2.3M9.7 18.5 12 16.2l2.3 2.3"/></g></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5.6" width="16" height="14" rx="2"/><path d="M4 10.2h16M8.6 3.6v3.4M15.4 3.6v3.4"/><circle cx="8.6" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/></g></symbol>
 </svg>
 
 <div id="map" role="application" aria-label="세계 여행 지도"></div>
@@ -764,7 +793,8 @@
     <h2 id="profileTitle">닉네임 설정</h2>
     <div class="tabs" id="profileTabs" style="display:none">
       <button class="tab on" data-ptab="profile">프로필</button>
-      <button class="tab" data-ptab="wish">여행 위시리스트</button>
+      <button class="tab" data-ptab="wish">위시리스트</button>
+      <button class="tab" data-ptab="badge">뱃지</button>
     </div>
     <div id="profilePane">
       <p class="sub">랭킹에는 닉네임 전체가, 후기에는 닉네임 일부가 표시됩니다.<br/>닉네임은 한글/영문/숫자/-/_ 입력이 가능하며 중복될 수 없습니다.</p>
@@ -778,6 +808,13 @@
       <div class="wishhead" id="wishHead">가고 싶은 도시 0</div>
       <ul class="wishlist" id="wishList"></ul>
       <div class="wishhint" id="wishHint">도시를 탭하면 지도의 해당 도시로 날아가요</div>
+    </div>
+    <div id="badgePane" style="display:none">
+      <p class="sub" style="margin-bottom:6px">여행이 쌓이면 뱃지를 얻을 수 있어요.<br/>뱃지를 누르면 획득 방법을 볼 수 있어요.</p>
+      <div class="badgewrap" id="badgeWrap">
+        <div id="badgeList"></div>
+        <div class="badge-tip" id="badgeTip" role="tooltip"></div>
+      </div>
     </div>
     <button class="btn alt" id="profileCancel">나중에 할게요</button>
   </div>
@@ -1131,7 +1168,7 @@ function myWishSet(){
 function iLiked(visitId){
   return !!(currentUser && (likesByVisit[visitId]||[]).includes(currentUser.uid));
 }
-let dataLoaded = false, usersLoaded = false;
+let dataLoaded = false, usersLoaded = false, wishesLoaded = false;
 let nickPrompted = false;
 
 // 이름 유틸
@@ -1227,7 +1264,9 @@ async function initFirebase(){
         // serverTimestamp는 서버 확정 전 로컬 스냅샷에서 null → 신규 항목이 맨 앞으로 튀지 않게 최댓값 처리
         allWishes.push({uid:v.uid, cityId:v.cityId, ts:v.createdAt?.seconds ?? Number.MAX_SAFE_INTEGER});
     });
+    wishesLoaded = true;
     drawMarkers(); updateWishBtn(); renderWishPane();
+    renderBadgePane(); checkNewBadges();
   }, err=>console.error("wishes:",err));
   unsubLikes = fb.onSnapshot(fb.collection(fb.db,"likes"), snap=>{
     likesByVisit = {};
@@ -1328,6 +1367,7 @@ function recompute(){
   });
   drawMarkers(); renderStats();
   if(openedCity){ renderCityDynamic(openedCity); updateWishBtn(); }
+  renderBadgePane(); checkNewBadges();
 }
 
 async function saveVisit(cityId, date, review, editId){
@@ -2397,6 +2437,7 @@ async function toggleWish(cityId){
     if(on) allWishes = allWishes.filter(w=>!(w.uid===currentUser.uid && w.cityId===cityId));
     else allWishes.push({uid:currentUser.uid, cityId, ts:Date.now()/1000});
     drawMarkers(); updateWishBtn(); renderWishPane();
+    renderBadgePane(); checkNewBadges();
     toast(on ? "위시리스트에서 해제했어요." : "위시리스트에 추가했어요.");
     return;
   }
@@ -2975,6 +3016,8 @@ function setProfileTab(tab){
     b.classList.toggle("on", b.dataset.ptab===tab));
   document.getElementById("profilePane").style.display = tab==="profile" ? "" : "none";
   document.getElementById("wishPane").style.display = tab==="wish" ? "" : "none";
+  document.getElementById("badgePane").style.display = tab==="badge" ? "" : "none";
+  if(tab==="badge") renderBadgePane(); else hideBadgeTip();
 }
 document.getElementById("profileTabs").addEventListener("click",e=>{
   const b = e.target.closest(".tab"); if(!b) return;
@@ -3010,6 +3053,177 @@ document.getElementById("wishList").addEventListener("click",e=>{
   const row = e.target.closest("[data-wcity]");
   if(row){ closeProfile(); openCity(row.dataset.wcity); }
 });
+
+/* ── 여행 뱃지 (여행자 메뉴 3번째 탭) ────────────────────────────
+   전부 클라이언트 재계산: allVisits·allWishes에서 통계를 뽑아 판정 (스키마·규칙 무변경).
+   기록을 지우면 뱃지도 함께 꺼질 수 있음 — 완전 파기 철학·탈퇴 설계와 일관(의도).
+   획득 연월은 기록 시각(ts) 오름차순 재생으로 역산: 조건을 처음 충족시킨 기록의 시점.
+   (다녀온 도시를 나중에 위시에 담으면 실제보다 이른 달이 표시될 수 있음 — 자기 보상 층이라 허용) */
+const BADGE_CATS = [
+  {t:"시작의 순간", items:[
+    {id:"v1",  name:"첫 번째 여행", ic:"plane",  desc:"여행 기록 처음 남기기",      lock:"첫 여행 기록",         done:s=>s.visits>=1},
+    {id:"r1",  name:"첫 번째 후기", ic:"pencil", desc:"한 줄 후기 처음 남기기",     lock:"첫 후기 작성",         done:s=>s.reviews>=1},
+    {id:"w0",  name:"첫 번째 위시", ic:"star5",  desc:"위시리스트에 도시 처음 담기", lock:"위시리스트에 첫 도시", done:s=>s.wishCount>=1},
+  ]},
+  {t:"즐거운 여행", items:[
+    {id:"c5",  name:"여행 입문자", ic:"mappin", desc:"서로 다른 5개 도시에 기록 남기기",  prog:s=>[s.cities,5,"개 도시"]},
+    {id:"c20", name:"여행 전문가", ic:"map",    desc:"서로 다른 20개 도시에 기록 남기기", prog:s=>[s.cities,20,"개 도시"]},
+    {id:"c50", name:"여행의 달인", ic:"trophy", desc:"서로 다른 50개 도시에 기록 남기기", prog:s=>[s.cities,50,"개 도시"]},
+  ]},
+  {t:"신대륙 모험", items:[
+    {id:"k3", name:"세 개의 대륙",   ic:"train", desc:"3개 대륙에 기록 남기기",     prog:s=>[s.conts,3,"곳"]},
+    {id:"k5", name:"다섯 개의 대륙", ic:"ship",  desc:"5개 대륙에 기록 남기기",     prog:s=>[s.conts,5,"곳"]},
+    {id:"k7", name:"일곱 개의 대륙", ic:"globe", desc:"7개 대륙 모두에 기록 남기기", prog:s=>[s.conts,7,"곳"]},
+  ]},
+  {t:"여행담 공유", items:[
+    {id:"rv20", name:"이야기꾼",    ic:"msg",  desc:"한 줄 후기 20개 남기기", prog:s=>[s.reviews,20,"개 후기"]},
+    {id:"rv50", name:"여행 가이드", ic:"book", desc:"한 줄 후기 50개 남기기", prog:s=>[s.reviews,50,"개 후기"]},
+  ]},
+  {t:"꿈꾸던 여행", items:[
+    {id:"wv1", name:"소원 성취", ic:"star4", desc:"위시리스트에 담았던 도시에 기록 남기기",      lock:"위시리스트 도시에 기록", done:s=>s.wishVisited>=1},
+    {id:"wv3", name:"소망 달성", ic:"crown", desc:"위시리스트에 담았던 도시 3곳에 기록 남기기", prog:s=>[s.wishVisited,3,"곳"]},
+  ]},
+  {t:"시간 탐험대", items:[
+    {id:"tsp", name:"봄의 여행",   ic:"flower", desc:"3월·4월·5월에 모두 기록 남기기",         seas:[3,4,5]},
+    {id:"tsu", name:"여름의 여행", ic:"sun",    desc:"6월·7월·8월에 모두 기록 남기기",         seas:[6,7,8]},
+    {id:"tfa", name:"가을의 여행", ic:"leaf",   desc:"9월·10월·11월에 모두 기록 남기기",        seas:[9,10,11]},
+    {id:"twi", name:"겨울의 여행", ic:"snow",   desc:"12월·1월·2월에 모두 기록 남기기",         seas:[12,1,2]},
+    {id:"tall",name:"사계절 여행", ic:"cal",    desc:"1월부터 12월까지 모든 달에 기록 남기기", prog:s=>[s.monthsN,12,"개 월"]},
+  ]},
+];
+const ALL_BADGES = BADGE_CATS.flatMap(c=>c.items);
+function badgeStats(){
+  const uid = currentUser?.uid;
+  const mine = uid ? allVisits.filter(v=>v.uid===uid) : [];
+  const cities = new Set(mine.map(v=>v.cityId));
+  const conts = new Set(mine.map(v=>contOf(CITY_MAP[v.cityId].c)));
+  conts.delete("기타");
+  const months = new Set(mine.filter(v=>v.date).map(v=>+v.date.slice(5,7)));
+  const wishes = uid ? allWishes.filter(w=>w.uid===uid) : [];
+  let wishVisited = 0;
+  new Set(wishes.map(w=>w.cityId)).forEach(id=>{ if(cities.has(id)) wishVisited++; });
+  return {visits:mine.length,
+    reviews:mine.filter(v=>v.review && v.review.trim()).length,
+    cities:cities.size, conts:conts.size, months, monthsN:months.size,
+    wishCount:wishes.length, wishVisited};
+}
+function badgeProg(b,s){
+  if(b.seas) return [b.seas.filter(m=>s.months.has(m)).length, b.seas.length, "개 월"];
+  return b.prog ? b.prog(s) : null;
+}
+function badgeDone(b,s){
+  if(b.done) return b.done(s);
+  const p = badgeProg(b,s);
+  return p[0] >= p[1];
+}
+function badgeLockText(b,s){
+  const p = badgeProg(b,s);
+  return p ? `${Math.min(p[0],p[1])} / ${p[1]}${p[2]}` : b.lock;
+}
+function fmtBadgeTs(ts){
+  if(!ts) return "";
+  if(ts > 1e11) ts = Date.now()/1000; // serverTimestamp 확정 전 로컬 최댓값 폴백 → 지금
+  const d = new Date(ts*1000);
+  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+// 획득 연월 역산: 기록을 시간순으로 재생하며 각 뱃지의 조건이 처음 참이 된 기록의 ts를 찾는다.
+// 위시 전용(첫 번째 위시)은 재생 밖에서 가장 이른 위시 시각으로 별도 처리(방문과 무관하므로).
+function badgeEarnedTs(){
+  const uid = currentUser?.uid, out = {};
+  if(!uid) return out;
+  const wishes = allWishes.filter(w=>w.uid===uid);
+  if(wishes.length) out.w0 = Math.min(...wishes.map(w=>w.ts||0));
+  const wishSet = new Set(wishes.map(w=>w.cityId));
+  const mine = allVisits.filter(v=>v.uid===uid).slice().sort((a,b)=>(a.ts||0)-(b.ts||0));
+  const st = {visits:0, reviews:0, cities:new Set(), conts:new Set(), months:new Set(), wv:new Set()};
+  mine.forEach(v=>{
+    st.visits++;
+    if(v.review && v.review.trim()) st.reviews++;
+    st.cities.add(v.cityId);
+    const ct = contOf(CITY_MAP[v.cityId].c);
+    if(ct !== "기타") st.conts.add(ct);
+    if(v.date) st.months.add(+v.date.slice(5,7));
+    if(wishSet.has(v.cityId)) st.wv.add(v.cityId);
+    const s = {visits:st.visits, reviews:st.reviews, cities:st.cities.size, conts:st.conts.size,
+      months:st.months, monthsN:st.months.size, wishCount:wishes.length, wishVisited:st.wv.size};
+    ALL_BADGES.forEach(b=>{ if(b.id!=="w0" && !(b.id in out) && badgeDone(b,s)) out[b.id] = v.ts||0; });
+  });
+  return out;
+}
+function renderBadgePane(){
+  const pane = document.getElementById("badgePane");
+  if(!pane || pane.style.display === "none") return; // 뱃지 탭이 열려 있을 때만 (recompute마다 호출되므로)
+  hideBadgeTip();
+  const s = badgeStats(), dates = badgeEarnedTs();
+  document.getElementById("badgeList").innerHTML = BADGE_CATS.map(cat=>
+    `<div class="bcat">${cat.t}</div><div class="badge-grid">`+
+    cat.items.map(b=>{
+      const on = badgeDone(b,s);
+      const when = on ? fmtBadgeTs(dates[b.id]) : "";
+      const sub = on ? (when ? `${when} 획득` : "획득") : badgeLockText(b,s);
+      return `<button type="button" class="badge${on?" on":""}" data-desc="${esc(b.desc)}"`+
+        ` aria-label="${esc(b.name)} — ${on?"획득함. ":""}${esc(b.desc)}">`+
+        `<span class="bic" aria-hidden="true">${icon(b.ic)}</span>`+
+        `<span class="bname">${esc(b.name)}</span><span class="bsub">${esc(sub)}</span></button>`;
+    }).join("")+`</div>`).join("");
+}
+function hideBadgeTip(){ const t = document.getElementById("badgeTip"); if(t) t.style.display = "none"; }
+function showBadgeTip(cell){
+  const wrap = document.getElementById("badgeWrap"), tip = document.getElementById("badgeTip");
+  tip.textContent = cell.dataset.desc;
+  tip.style.display = "block";
+  const wr = wrap.getBoundingClientRect(), cr = cell.getBoundingClientRect();
+  let left = cr.left - wr.left + cr.width/2 - tip.offsetWidth/2;
+  left = Math.max(4, Math.min(left, wrap.clientWidth - tip.offsetWidth - 4));
+  let top = cr.top - wr.top + wrap.scrollTop - tip.offsetHeight - 8;
+  if(top < wrap.scrollTop + 2) top = cr.bottom - wr.top + wrap.scrollTop + 8; // 첫 줄은 아래로
+  tip.style.left = left+"px"; tip.style.top = top+"px";
+}
+// 툴팁: hover(데스크톱) + 탭 토글(모바일) + 키보드 포커스 — 획득 조건은 행동으로 이어지는 핵심 정보라 터치도 지원
+(()=>{
+  const wrap = document.getElementById("badgeWrap");
+  if(!wrap) return;
+  wrap.addEventListener("pointerover", e=>{ const c = e.target.closest(".badge"); if(c) showBadgeTip(c); });
+  wrap.addEventListener("pointerout", e=>{
+    const c = e.target.closest(".badge");
+    if(c && !c.contains(e.relatedTarget)) hideBadgeTip();
+  });
+  wrap.addEventListener("focusin", e=>{ const c = e.target.closest(".badge"); if(c) showBadgeTip(c); });
+  wrap.addEventListener("focusout", ()=>hideBadgeTip());
+  wrap.addEventListener("click", e=>{
+    const c = e.target.closest(".badge");
+    if(!c){ hideBadgeTip(); return; }
+    e.stopPropagation();
+    const tip = document.getElementById("badgeTip");
+    if(tip.style.display === "block" && tip.textContent === c.dataset.desc) hideBadgeTip();
+    else showBadgeTip(c);
+  });
+  document.addEventListener("click", hideBadgeTip);
+  wrap.addEventListener("scroll", hideBadgeTip);
+})();
+/* 새 뱃지 감지: 재계산 때마다 직전 획득 집합과 비교. 내 뱃지는 내 visits·wishes에만 의존하므로
+   타인 활동으로는 변하지 않는다. 기준선은 로그인·데이터 로드 후 처음 계산될 때 조용히 설정(초기 일괄 토스트 방지),
+   기록 삭제로 뱃지가 꺼질 때도 조용히 갱신. 저장 토스트(단일 슬롯)를 먼저 읽도록 1.6초 뒤 알림. */
+let badgeBaseUid = null, badgeBase = null, badgeToastTimer = null, badgePendingFresh = [];
+function checkNewBadges(){
+  const uid = currentUser?.uid || null;
+  if(!uid || !dataLoaded || !wishesLoaded){ badgeBaseUid = null; badgeBase = null; return; }
+  const s = badgeStats();
+  const earned = new Set(ALL_BADGES.filter(b=>badgeDone(b,s)).map(b=>b.id));
+  if(badgeBaseUid !== uid || !badgeBase){ badgeBaseUid = uid; badgeBase = earned; return; }
+  const fresh = ALL_BADGES.filter(b=>earned.has(b.id) && !badgeBase.has(b.id));
+  badgeBase = earned;
+  if(!fresh.length) return;
+  // 1.6초 창 안에 다른 스냅샷이 또 새 뱃지를 만들면(예: 저장 직후 위시 추가) 앞선 것이 유실되지 않게 누적
+  badgePendingFresh.push(...fresh);
+  clearTimeout(badgeToastTimer);
+  badgeToastTimer = setTimeout(()=>{
+    const all = badgePendingFresh; badgePendingFresh = [];
+    if(all.length === 1) toast(`뱃지를 얻었어요 · ${all[0].name}`, all[0].ic);
+    else toast(`뱃지를 ${all.length}개 얻었어요`, "trophy");
+  }, 1600);
+}
+
 function closeProfile(){ profileOverlay.classList.remove("open"); modalClosed(profileOverlay); }
 // 취소성 닫기(나중에 할게요·ESC·배경 클릭): 첫 설정 흐름이면 보류 행동도 폐기 —
 // 남겨두면 한참 뒤 닉네임 저장 순간 옛 행동(기록 모달 등)이 뜬금없이 실행된다 (cancelAuth와 동일 원칙)
@@ -3345,7 +3559,7 @@ function toast(msg, ic){
 
 if(DEMO){
   document.getElementById("demoBadge").classList.add("on");
-  allVisits = makeDemoVisits(); dataLoaded = true;
+  allVisits = makeDemoVisits(); dataLoaded = true; wishesLoaded = true;
   recompute();
 }else{
   recompute();
